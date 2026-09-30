@@ -46,7 +46,7 @@
                     <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios via Nuvem</h1>
-                        <p class="text-xs text-slate-400">Cadastre clientes e cole os links diretos do ImgBB</p>
+                        <p class="text-xs text-slate-400">Cadastre clientes e cole os links diretos</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
@@ -64,7 +64,7 @@
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Links Diretos das Fotos (Um link por linha)</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui os links diretos das fotos hospedadas no ImgBB.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui os links diretos (certifique-se de que terminam em .jpg ou .png).</p>
                 </div>
 
                 <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
@@ -190,7 +190,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM SUPORTE A TAG DE IMAGEM IMGBB -->
+    <!-- SCRIPT DEFINITIVO -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -260,11 +260,11 @@
         }
 
         function saveClientsToStorage() {
-            localStorage.setItem('wa_clients_imgbb_tag_db', JSON.stringify(clients));
+            localStorage.setItem('wa_clients_v4', JSON.stringify(clients));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_imgbb_tag_db');
+            const data = localStorage.getItem('wa_clients_v4');
             if (data) {
                 try { clients = JSON.parse(data); } catch(e) { clients = []; }
             }
@@ -422,10 +422,9 @@
             filteredPhotos.forEach(photo => {
                 const heartBg = photo.selected ? 'bg-amber-400 text-slate-950 scale-110 shadow-lg shadow-amber-400/50' : 'bg-slate-950/90 border border-slate-700 text-slate-300 hover:text-white';
                 
-                // Usa tag IMG real para carregar perfeitamente as fotos do ImgBB
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
-                        <img src="${photo.url}" class="absolute inset-0 w-full h-full object-cover cursor-pointer pointer-events-auto" onclick="openModal(${photo.id})" />
+                        <img src="${photo.url}" loading="lazy" class="absolute inset-0 w-full h-full object-cover cursor-pointer" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none">
                             <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
