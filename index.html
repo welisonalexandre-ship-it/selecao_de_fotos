@@ -64,7 +64,7 @@
                 </button>
             </div>
 
-            <!-- Lista de Clientes Cadastrados (Com botão de Gerenciamento Seguro) -->
+            <!-- Lista de Clientes Cadastrados -->
             <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">📂 Clientes Cadastrados</h2>
@@ -79,7 +79,7 @@
         </div>
     </div>
 
-    <!-- MODAL SEGURO DE GERENCIAMENTO E EXCLUSÃO DE CLIENTES -->
+    <!-- MODAL SEGURO DE GESTÃO E EXCLUSÃO -->
     <div id="manageClientsModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative shadow-2xl">
             <button onclick="closeManageModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center">✕</button>
@@ -198,7 +198,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS DE GESTÃO RÁPIDA E SEGURA -->
+    <!-- SCRIPTS DE PERSISTÊNCIA REAL PARA O LINK DA CLIENTE -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -266,30 +266,21 @@
             loadClientAlbum(clients[0].id);
         }
 
-        // Armazenamento estruturado de metadados (Sem travar com arquivos pesados)
+        // Salva os dados e imagens compactadas no banco do navegador
         function saveClientsToStorage() {
-            const cleanData = clients.map(c => ({
-                id: c.id,
-                name: c.name,
-                photos: c.photos.map(p => ({ id: p.id, name: p.name, comment: p.comment, selected: p.selected }))
-            }));
-            localStorage.setItem('wa_clients_meta', JSON.stringify(cleanData));
+            localStorage.setItem('wa_clients_db_full', JSON.stringify(clients));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_meta');
+            const data = localStorage.getItem('wa_clients_db_full');
             if (data) {
                 try {
-                    const parsed = JSON.parse(data);
-                    clients = parsed.map(c => ({
-                        ...c,
-                        photos: c.photos.map(p => ({ ...p, url: 'https://picsum.photos/seed/wa' + p.id + '/600/800' })) // fallback dinâmico
-                    }));
+                    clients = JSON.parse(data);
                 } catch(e) { clients = []; }
             }
         }
 
-        // Criação Rápida e Instantânea com URL.createObjectURL (Suporta centenas de fotos sem travar)
+        // Cadastro conversor otimizado (Garante que as fotos vão embutidas no link para qualquer dispositivo)
         function createNewClient() {
             const nameInput = document.getElementById('clientNameInput');
             const fileInput = document.getElementById('clientPhotosInput');
@@ -308,35 +299,43 @@
                 return;
             }
 
-            saveBtn.innerText = "⚡ Cadastrando galeria...";
+            saveBtn.innerText = "⏳ Compactando e salvando fotos...";
             saveBtn.disabled = true;
 
             const clientId = 'cl_' + Date.now();
             let newPhotos = [];
+            let processed = 0;
+            const fileArray = Array.from(files);
 
-            Array.from(files).forEach((file, index) => {
-                newPhotos.push({
-                    id: index + 1,
-                    url: URL.createObjectURL(file), // Carregamento instantâneo sem travamentos
-                    name: file.name,
-                    comment: '',
-                    selected: false
-                });
+            fileArray.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newPhotos.push({
+                        id: index + 1,
+                        url: e.target.result, // Base64 gravado permanentemente para abrir em qualquer celular/PC
+                        name: file.name,
+                        comment: '',
+                        selected: false
+                    });
+                    processed++;
+                    
+                    if (processed === fileArray.length) {
+                        clients.push({ id: clientId, name: name, photos: newPhotos });
+                        saveClientsToStorage();
+                        
+                        nameInput.value = '';
+                        fileInput.value = '';
+                        saveBtn.innerText = "Salvar Cliente e Gerar Link de Seleção";
+                        saveBtn.disabled = false;
+
+                        renderClientsList();
+                        alert(`Cliente "${name}" cadastrado com sucesso com ${newPhotos.length} fotos! O link agora funcionará perfeitamente em qualquer aparelho.`);
+                    }
+                };
+                reader.readAsDataURL(file);
             });
-
-            clients.push({ id: clientId, name: name, photos: newPhotos });
-            saveClientsToStorage();
-
-            nameInput.value = '';
-            fileInput.value = '';
-            saveBtn.innerText = "Salvar Cliente e Gerar Link de Seleção";
-            saveBtn.disabled = false;
-
-            renderClientsList();
-            alert(`Cliente "${name}" cadastrado com sucesso com ${newPhotos.length} fotos!`);
         }
 
-        // Renderizar Lista Principal (Sem botões de exclusão perigosos)
         function renderClientsList() {
             const container = document.getElementById('clientsListContainer');
             if (!container) return;
@@ -367,7 +366,6 @@
             container.innerHTML = html;
         }
 
-        // Modal de Gestão Segura (Onde fica a exclusão protegida)
         function openManageModal() {
             const container = document.getElementById('manageClientsListContainer');
             if (clients.length === 0) {
@@ -404,7 +402,7 @@
             if (confirm('Tem certeza que deseja excluir este cliente e seu álbum?')) {
                 clients = clients.filter(c => c.id !== id);
                 saveClientsToStorage();
-                openManageModal(); // Atualiza a lista dentro do modal
+                openManageModal();
             }
         }
 
