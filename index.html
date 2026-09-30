@@ -46,7 +46,7 @@
                     <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios</h1>
-                        <p class="text-xs text-slate-400">Gere links universais para os seus clientes</p>
+                        <p class="text-xs text-slate-400">Gere links curtos e profissionais</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
@@ -58,17 +58,17 @@
                 
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nome do Cliente</label>
-                    <input type="text" id="clientNameInput" placeholder="Ex: Susana" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="text" id="clientNameInput" placeholder="Ex: Maria Eduarda" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
 
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
-                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas copiadas do ImgBB[cite: 10].</p>
+                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../444A1621.jpg&#10;https://i.ibb.co/.../444A1622.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas copiadas do ImgBB[cite: 10]. O sistema usará o nome real dos arquivos automaticamente.</p>
                 </div>
 
                 <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                    Gerar Link Universal para o Ensaio
+                    Gerar Link Curto para o Ensaio
                 </button>
             </div>
 
@@ -94,7 +94,7 @@
 
         <div class="flex items-center space-x-3">
             <button id="adminButtonToggle" onclick="openAdminDashboard()" class="text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
-                ⚙️ Painel de Clientes
+                ⚙ Painel de Clientes
             </button>
             <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -149,10 +149,9 @@
         </div>
     </main>
 
-    <!-- MODAL DE ZOOM / COMENTÁRIOS COM BOTÃO FECHAR BEM VISÍVEL -->
+    <!-- MODAL DE ZOOM / COMENTÁRIOS -->
     <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl mt-8">
-            <!-- BOTÃO FECHAR BEM MAIOR E MAIS BAIXO -->
             <button onclick="closeModal()" class="absolute -top-6 right-2 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-12 h-12 rounded-full flex items-center justify-center shadow-2xl shadow-amber-500/50 transition text-lg border-2 border-slate-950">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
@@ -175,7 +174,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT -->
+    <!-- SCRIPT COM EXTRAÇÃO DE NOME REAL -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -183,37 +182,63 @@
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const dataParam = urlParams.get('dados');
-            const nameParam = urlParams.get('nome');
+            const idParam = urlParams.get('id');
+            const legacyData = urlParams.get('dados');
 
-            if (dataParam) {
+            if (legacyData) {
+                try {
+                    const decodedUrls = JSON.parse(atob(legacyData));
+                    const nameParam = urlParams.get('nome') ? decodeURIComponent(urlParams.get('nome')) : "Ensaio";
+                    loadAlbumData(nameParam, decodedUrls);
+                    return;
+                } catch(e) {}
+            }
+
+            if (idParam) {
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
                 document.getElementById('adminButtonToggle').style.display = 'none';
 
-                try {
-                    const decodedUrls = JSON.parse(atob(dataParam));
-                    currentAlbum.name = nameParam ? decodeURIComponent(nameParam) : "Ensaio Fotográfico";
-                    
-                    currentAlbum.photos = decodedUrls.map((url, index) => ({
-                        id: index + 1,
-                        url: url,
-                        name: `FOTO_${String(index + 1).padStart(3, '0')}.jpg`,
-                        comment: '',
-                        selected: false
-                    }));
-
-                    document.getElementById('clientAlbumName').innerText = `Ensaio: ${currentAlbum.name}`;
-                    document.getElementById('headerAlbumTitle').innerText = currentAlbum.name;
-                    renderGrid();
-                } catch(e) {
-                    document.getElementById('emptyTitle').innerText = "Erro ao carregar o álbum.";
-                    document.getElementById('emptySub').innerText = "O link recebido pode estar corrompido.";
+                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+                if (savedAlbums[idParam]) {
+                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                } else {
+                    document.getElementById('emptyTitle').innerText = "Ensaio não encontrado.";
+                    document.getElementById('emptySub').innerText = "O link pode ter expirado ou foi removido.";
                 }
             } else {
                 document.getElementById('adminLoginModal').classList.remove('hidden');
             }
         };
+
+        function extractFileName(url) {
+            try {
+                const cleanUrl = url.split('?')[0];
+                const segments = cleanUrl.split('/');
+                let filename = segments.pop();
+                if (!filename || filename.indexOf('.') === -1) {
+                    filename = segments.pop() || 'foto.jpg';
+                }
+                return decodeURIComponent(filename);
+            } catch (e) {
+                return 'foto.jpg';
+            }
+        }
+
+        function loadAlbumData(name, links) {
+            currentAlbum.name = name;
+            currentAlbum.photos = links.map((url, index) => ({
+                id: index + 1,
+                url: url,
+                name: extractFileName(url),
+                comment: '',
+                selected: false
+            }));
+
+            document.getElementById('clientAlbumName').innerText = `Ensaio: ${currentAlbum.name}`;
+            document.getElementById('headerAlbumTitle').innerText = currentAlbum.name;
+            renderGrid();
+        }
 
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
@@ -254,8 +279,7 @@
             for(let i=1; i<=12; i++) {
                 demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
             }
-            const encoded = btoa(JSON.stringify(demoUrls));
-            window.location.href = `${window.location.origin}${window.location.pathname}?nome=Maria%20%26%20Eduardo&dados=${encoded}`;
+            loadAlbumData("Maria & Eduardo (Demo)", demoUrls);
         }
 
         function createNewClient() {
@@ -275,41 +299,49 @@
                 return;
             }
 
-            const encodedData = btoa(JSON.stringify(linkList));
-            const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
+            const cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
+            const shortLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}`;
 
-            let saved = JSON.parse(localStorage.getItem('wa_universal_links') || '[]');
-            saved.push({ name: name, link: universalLink, date: new Date().toLocaleDateString() });
-            localStorage.setItem('wa_universal_links', JSON.stringify(saved));
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            savedAlbums[cleanId] = {
+                name: name,
+                links: linkList,
+                date: new Date().toLocaleDateString()
+            };
+            localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
             nameInput.value = '';
             linksInput.value = '';
             renderSavedLinks();
 
-            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+            prompt("Link curto gerado com sucesso! Copie abaixo para enviar à cliente:", shortLink);
         }
 
         function renderSavedLinks() {
             const container = document.getElementById('clientsListContainer');
             if (!container) return;
 
-            let saved = JSON.parse(localStorage.getItem('wa_universal_links') || '[]');
-            if (saved.length === 0) {
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            let keys = Object.keys(savedAlbums);
+
+            if (keys.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">Nenhum ensaio gerado ainda.</p>';
                 return;
             }
 
             let html = '';
-            saved.forEach((item, index) => {
+            keys.forEach(key => {
+                let item = savedAlbums[key];
+                let link = `${window.location.origin}${window.location.pathname}?id=${key}`;
                 html += `
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
                             <h3 class="font-bold text-sm text-white">${item.name}</h3>
-                            <p class="text-xs text-slate-400">Criado em: ${item.date}</p>
+                            <p class="text-xs text-slate-400">Fotos: ${item.links.length} | Criado em: ${item.date}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="copyLinkByIndex(${index})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
-                            <a href="${item.link}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</a>
+                            <button onclick="copySpecificLink('${link}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
+                            <a href="${link}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</a>
                         </div>
                     </div>
                 `;
@@ -317,12 +349,9 @@
             container.innerHTML = html;
         }
 
-        function copyLinkByIndex(index) {
-            let saved = JSON.parse(localStorage.getItem('wa_universal_links') || '[]');
-            if (saved[index]) {
-                navigator.clipboard.writeText(saved[index].link);
-                alert('Link universal copiado com sucesso! Pode enviar no WhatsApp da cliente.');
-            }
+        function copySpecificLink(link) {
+            navigator.clipboard.writeText(link);
+            alert('Link curto copiado com sucesso! Pode enviar no WhatsApp da cliente.');
         }
 
         function renderGrid() {
