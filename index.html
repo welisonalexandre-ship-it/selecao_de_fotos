@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Fotos | Prova Exclusiva</title>
+    <!-- Tailwind CSS para um design moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        /* Camada invisível de proteção contra salvamento */
+        .protect-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background: transparent;
+        }
+        /* Esconde barras de rolagem mantendo a funcionalidade */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
+
+    <!-- HEADER / TOPO -->
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20">
+                WA
+            </div>
+            <div>
+                <h1 id="albumTitle" class="font-semibold text-base sm:text-lg tracking-tight text-white">Galeria de Seleção</h1>
+                <p class="text-xs text-slate-400">Selecione suas fotos favoritas para a edição final</p>
+            </div>
+        </div>
+        
+        <!-- Status de Seleção -->
+        <div class="flex items-center space-x-4">
+            <div class="bg-slate-900/80 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                <span class="text-xs sm:text-sm font-medium"><strong id="selectedCount" class="text-amber-400 text-base">0</strong> selecionadas</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- PAINEL DE CONTROLE / SIMULAÇÃO DE CARGA (Para você testar ou usar) -->
+        <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 mb-8 backdrop-blur-sm">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-1">Painel do Fotógrafo</h2>
+                    <p class="text-xs text-slate-400">Envie suas fotos do computador ou carregue um lote de teste para demonstração.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition border border-slate-700/50 flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span>Carregar Fotos (Lote)</span>
+                        <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="handleFiles(this.files)">
+                    </label>
+                    <button onclick="loadSamplePhotos()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-amber-500/10">
+                        ⚡ Simular 500 Fotos (Teste)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AVISO DE PROTEÇÃO -->
+        <div class="flex items-center space-x-2 text-xs text-slate-400 bg-slate-900/30 border border-slate-800/50 px-4 py-3 rounded-xl mb-6">
+            <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span>Ambiente protegido: Downloads e capturas de tela desativados por segurança. Suas fotos contêm marca d'água de proteção.</span>
+        </div>
+
+        <!-- GRID DE FOTOS -->
+        <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+            <!-- Estado Inicial Vazio -->
+            <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
+                <svg class="w-16 h-16 text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <h3 class="text-base font-medium text-slate-300">Nenhuma foto carregada ainda</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-sm">Clique em "Carregar Fotos" acima para enviar as imagens do seu ensaio ou teste a galeria rápida.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- BARRA FLUTUANTE DE ENVIO DA SELEÇÃO -->
+    <div id="floatingBar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 translate-y-24 transition-transform duration-300 w-11/12 max-w-xl">
+        <div class="bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl p-4 rounded-2xl shadow-2xl flex items-center justify-between">
+            <div>
+                <span class="text-xs text-slate-400 block">Sua seleção está pronta?</span>
+                <span id="barSelectionText" class="text-sm font-semibold text-white">0 fotos escolhidas</span>
+            </div>
+            <button onclick="finalizeSelection()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Enviar Seleção ao Fotógrafo</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE SEGURANÇA E LÓGICA -->
+    <script>
+        let photos = [];
+        let selectedPhotos = new Set();
+
+        // Bloqueios de Segurança Anti-Print / Anti-Download
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P')) {
+                e.preventDefault();
+                alert('Ação bloqueada por motivos de segurança e direitos autorais.');
+            }
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c'))) {
+                e.preventDefault();
+            }
+        });
+
+        // Simulação de lote grande (Exemplo com imagens de placeholder otimizadas)
+        function loadSamplePhotos() {
+            photos = [];
+            const sampleCount = 500;
+            for (let i = 1; i <= sampleCount; i++) {
+                // Usando imagens placeholder dinâmicas
+                photos.push({
+                    id: i,
+                    url: `https://picsum.photos/seed/photo${i}/600/800`,
+                    name: `FOTO_${String(i).padStart(3, '0')}.jpg`
+                });
+            }
+            renderGrid();
+        }
+
+        // Upload Real pelo Fotógrafo
+        function handleFiles(files) {
+            photos = [];
+            Array.from(files).forEach((file, index) => {
+                photos.push({
+                    id: index + 1,
+                    url: URL.createObjectURL(file),
+                    name: file.name
+                });
+            });
+            renderGrid();
+        }
+
+        // Renderizar a Galeria no HTML
+        function renderGrid() {
+            const grid = document.getElementById('photoGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (photos.length === 0) {
+                emptyState.style.display = 'flex';
+                grid.innerHTML = '';
+                grid.appendChild(emptyState);
+                document.getElementById('floatingBar').classList.add('translate-y-24');
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            let html = '';
+
+            photos.forEach(photo => {
+                const isSelected = selectedPhotos.has(photo.id);
+                html += `
+                    <div class="group relative aspect-[4/5] bg-slate-900 rounded-2xl overflow-hidden border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200 cursor-pointer" onclick="toggleSelect(${photo.id})">
+                        <!-- Camada de Bloqueio Transparente -->
+                        <div class="protect-overlay"></div>
+                        
+                        <!-- Imagem de Fundo (Protegida) -->
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105" style="background-image: url('${photo.url}')"></div>
+
+                        <!-- Marca d'Água Discreta na Foto -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
+                            <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg] border border-white/30 px-2 py-1 rounded">WA PROVA</span>
+                        </div>
+
+                        <!-- Gradiente Inferior -->
+                        <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
+
+                        <!-- Checkbox / Botão de Seleção -->
+                        <div class="absolute top-3 right-3 z-20">
+                            <div class="w-7 h-7 rounded-full flex items-center justify-center transition ${isSelected ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30' : 'bg-slate-900/60 border border-slate-600 text-transparent hover:border-amber-400'}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                        </div>
+
+                        <!-- Nome da Foto -->
+                        <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between">
+                            <span class="text-[11px] font-medium text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/50 truncate">${photo.name}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Mantém o empty state no DOM se precisar resetar
+            grid.innerHTML = html;
+            grid.prepend(emptyState);
+        }
+
+        // Selecionar ou Desselecionar Foto
+        function toggleSelect(id) {
+            if (selectedPhotos.has(id)) {
+                selectedPhotos.delete(id);
+            } else {
+                selectedPhotos.add(id);
+            }
+            updateCounters();
+            renderGrid();
+        }
+
+        // Atualizar Contadores e Barra Flutuante
+        function updateCounters() {
+            const count = selectedPhotos.size;
+            document.getElementById('selectedCount').innerText = count;
+            document.getElementById('barSelectionText').innerText = `${count} foto${count === 1 ? '' : 's'} escolhida${count === 1 ? '' : 's'}`;
+            
+            const floatingBar = document.getElementById('floatingBar');
+            if (count > 0) {
+                floatingBar.classList.remove('translate-y-24');
+            } else {
+                floatingBar.classList.add('translate-y-24');
+            }
+        }
+
+        // Finalizar e Enviar via WhatsApp
+        function finalizeSelection() {
+            if (selectedPhotos.size === 0) {
+                alert('Selecione ao menos uma foto antes de enviar.');
+                return;
+            }
+
+            const chosenNames = photos
+                .filter(p => selectedPhotos.has(p.id))
+                .map(p => p.name)
+                .join(', ');
+
+            const message = encodeURIComponent(`Olá! Terminei a minha seleção de fotos. Escolhi ${selectedPhotos.size} fotos:\n\n${chosenNames}`);
+            // Substitua pelo seu número de WhatsApp se desejar (ex: 5584999999999)
+            window.open(`https://wa.me/?text=${message}`, '_blank');
+        }
+    </script>
+</body>
+</html>
