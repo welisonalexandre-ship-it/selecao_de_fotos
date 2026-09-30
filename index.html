@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seleção de Fotos | Prova Exclusiva</title>
-    <!-- Tailwind CSS para um design moderno -->
+    <title>WA Fotografia | Galeria de Seleção Exclusiva</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,242 +14,434 @@
             -ms-user-select: none;
             user-select: none;
         }
-        /* Camada invisível de proteção contra salvamento */
         .protect-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            background: transparent;
+            top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: transparent;
         }
-        /* Esconde barras de rolagem mantendo a funcionalidade */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
+<body class="bg-[#0b0f17] text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
 
-    <!-- HEADER / TOPO -->
-    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <!-- TELA DE LOGIN DO FOTÓGRAFO (Painel Restrito) -->
+    <div id="adminLoginModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                WA
+            </div>
+            <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
+            <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar os álbuns dos clientes.</p>
+            <input type="password" id="adminPassword" placeholder="Senha (padrão: 1234)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
+            <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20">
+                Acessar Painel
+            </button>
+            <div class="mt-6 border-t border-slate-800 pt-4">
+                <button onclick="enterAsClientDemo()" class="text-xs text-slate-400 hover:text-amber-400 transition underline">
+                    Visualizar como Cliente (Modo Demonstração)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAINEL DE GESTÃO DO FOTÓGRAFO -->
+    <div id="adminDashboard" class="hidden fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-6">
+        <div class="max-w-3xl mx-auto py-10">
+            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white">Gerenciador de Ensaios</h1>
+                        <p class="text-xs text-slate-400">Crie o link de seleção para sua cliente</p>
+                    </div>
+                </div>
+                <button onclick="logoutAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Sair do Painel</button>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-xl space-y-6">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Nome do Cliente / Ensaio</label>
+                    <input type="text" id="clientNameInput" placeholder="Ex: Maria & Eduardo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Carregar Fotos do Ensaio</label>
+                    <input type="file" id="clientPhotosInput" multiple accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-2">Selecione todas as fotos do ensaio de uma vez no seu computador.</p>
+                </div>
+
+                <button onclick="generateClientGallery()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
+                    ✨ Criar Galeria e Gerar Link Exclusivo
+                </button>
+            </div>
+
+            <!-- Link Gerado -->
+            <div id="generatedLinkContainer" class="hidden mt-6 bg-slate-900 border border-emerald-500/30 p-6 rounded-3xl text-center">
+                <h3 class="text-sm font-semibold text-emerald-400 mb-2">Link gerado com sucesso!</h3>
+                <p class="text-xs text-slate-300 mb-4">Envie este link direto para o WhatsApp da sua cliente:</p>
+                <div class="flex items-center space-x-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <input type="text" id="shareableLink" readonly class="w-full bg-transparent text-xs text-slate-300 focus:outline-none">
+                    <button onclick="copyShareableLink()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition whitespace-nowrap">Copiar</button>
+                </div>
+                <button onclick="openClientView()" class="mt-4 text-xs text-amber-400 hover:underline">Abrir galeria como a cliente vê</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER DO SITE (Visão da Cliente) -->
+    <header class="border-b border-slate-800/80 bg-[#0b0f17]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-bold text-lg shadow-lg shadow-amber-500/20">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-bold text-base shadow-lg shadow-amber-500/20">
                 WA
             </div>
             <div>
-                <h1 id="albumTitle" class="font-semibold text-base sm:text-lg tracking-tight text-white">Galeria de Seleção</h1>
-                <p class="text-xs text-slate-400">Selecione suas fotos favoritas para a edição final</p>
+                <span class="text-[10px] tracking-widest uppercase text-amber-400 font-semibold block">WA Fotografia</span>
+                <h1 id="headerAlbumTitle" class="font-bold text-sm sm:text-base text-white">Galeria de Seleção</h1>
             </div>
         </div>
-        
-        <!-- Status de Seleção -->
-        <div class="flex items-center space-x-4">
-            <div class="bg-slate-900/80 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
+
+        <div class="flex items-center space-x-3">
+            <button onclick="openAdminFromClient()" class="text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+                ⚙️ Painel Fotógrafo
+            </button>
+            <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-                <span class="text-xs sm:text-sm font-medium"><strong id="selectedCount" class="text-amber-400 text-base">0</strong> selecionadas</span>
+                <span class="text-xs font-medium"><strong id="selectedCountHeader" class="text-amber-400 text-sm">0</strong> selecionadas</span>
             </div>
         </div>
     </header>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- CONTEÚDO PRINCIPAL (Área da Cliente) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        <!-- PAINEL DE CONTROLE / SIMULAÇÃO DE CARGA (Para você testar ou usar) -->
-        <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 mb-8 backdrop-blur-sm">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-1">Painel do Fotógrafo</h2>
-                    <p class="text-xs text-slate-400">Envie suas fotos do computador ou carregue um lote de teste para demonstração.</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition border border-slate-700/50 flex items-center space-x-2">
-                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span>Carregar Fotos (Lote)</span>
-                        <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="handleFiles(this.files)">
-                    </label>
-                    <button onclick="loadSamplePhotos()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-amber-500/10">
-                        ⚡ Simular 500 Fotos (Teste)
+        <!-- COLUNA ESQUERDA / FILTROS E INFO -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl">
+                <h2 id="clientAlbumName" class="text-xl font-bold text-white mb-1">Ensaio Fotográfico</h2>
+                <p class="text-xs text-slate-400 mb-6">Selecione abaixo as suas fotos favoritas. Você também pode deixar comentários de ajustes em cada foto.</p>
+                
+                <div class="space-y-2 text-xs">
+                    <button onclick="setFilter('all')" id="filterBtnAll" class="w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition">
+                        <span>Todas as fotos</span>
+                        <span id="totalCountBadge">0</span>
+                    </button>
+                    <button onclick="setFilter('selected')" id="filterBtnSelected" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700 transition">
+                        <span>Selecionadas</span>
+                        <span id="selectedCountBadge">0</span>
+                    </button>
+                    <button onclick="setFilter('unselected')" id="filterBtnUnselected" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700 transition">
+                        <span>Não selecionadas</span>
+                        <span id="unselectedCountBadge">0</span>
                     </button>
                 </div>
             </div>
+
+            <!-- CARD DE FINALIZAÇÃO -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl text-center">
+                <div class="w-24 h-24 mx-auto mb-4 rounded-full border-4 border-amber-400/20 flex items-center justify-center relative">
+                    <span id="circularCount" class="text-2xl font-bold text-amber-400">0</span>
+                    <span class="absolute bottom-2 text-[10px] text-slate-400 uppercase tracking-wider">escolhidas</span>
+                </div>
+                <button onclick="finalizeSelectionWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-2xl transition shadow-lg shadow-emerald-500/20 text-sm flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Enviar Seleção ao WhatsApp</span>
+                </button>
+            </div>
         </div>
 
-        <!-- AVISO DE PROTEÇÃO -->
-        <div class="flex items-center space-x-2 text-xs text-slate-400 bg-slate-900/30 border border-slate-800/50 px-4 py-3 rounded-xl mb-6">
-            <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-            <span>Ambiente protegido: Downloads e capturas de tela desativados por segurança. Suas fotos contêm marca d'água de proteção.</span>
-        </div>
-
-        <!-- GRID DE FOTOS -->
-        <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            <!-- Estado Inicial Vazio -->
-            <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                <svg class="w-16 h-16 text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <h3 class="text-base font-medium text-slate-300">Nenhuma foto carregada ainda</h3>
-                <p class="text-xs text-slate-500 mt-1 max-w-sm">Clique em "Carregar Fotos" acima para enviar as imagens do seu ensaio ou teste a galeria rápida.</p>
+        <!-- COLUNA DIREITA / GRID DE FOTOS -->
+        <div class="lg:col-span-3">
+            <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <!-- Vazio Inicial -->
+                <div id="emptyState" class="col-span-full py-24 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
+                    <svg class="w-16 h-16 text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <h3 class="text-base font-medium text-slate-300">Nenhuma foto carregada neste álbum</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Entre no painel do fotógrafo para cadastrar o cliente e carregar as fotos.</p>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- BARRA FLUTUANTE DE ENVIO DA SELEÇÃO -->
-    <div id="floatingBar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 translate-y-24 transition-transform duration-300 w-11/12 max-w-xl">
-        <div class="bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl p-4 rounded-2xl shadow-2xl flex items-center justify-between">
-            <div>
-                <span class="text-xs text-slate-400 block">Sua seleção está pronta?</span>
-                <span id="barSelectionText" class="text-sm font-semibold text-white">0 fotos escolhidas</span>
+    <!-- MODAL DE ZOOM / COMENTÁRIOS DA FOTO -->
+    <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center">✕</button>
+            
+            <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
+                <div class="protect-overlay"></div>
+                <img id="modalImg" src="" class="max-h-full max-w-full object-contain">
+                <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                    <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">WA FOTOGRAFIA</span>
+                </div>
             </div>
-            <button onclick="finalizeSelection()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Enviar Seleção ao Fotógrafo</span>
-            </button>
+
+            <div class="w-full md:w-72 flex flex-col justify-between">
+                <div>
+                    <h3 id="modalPhotoName" class="text-sm font-bold text-white mb-2">FOTO_001.JPG</h3>
+                    <p class="text-xs text-slate-400 mb-4">Deseja adicionar algum ajuste ou comentário específico para esta foto?</p>
+                    <textarea id="modalComment" placeholder="Ex: Ajustar brilho, retocar fundo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-28 resize-none"></textarea>
+                </div>
+
+                <div class="space-y-3 mt-4">
+                    <button onclick="saveModalComment()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 rounded-xl transition">Salvar Comentário</button>
+                    <button id="modalToggleSelectBtn" onclick="toggleSelectCurrentModal()" class="w-full font-bold text-xs py-3 rounded-xl transition shadow-lg">Favoritar Foto</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- SCRIPT DE SEGURANÇA E LÓGICA -->
+    <!-- SCRIPTS DE LÓGICA E SEGURANÇA -->
     <script>
-        let photos = [];
-        let selectedPhotos = new Set();
+        let photos = []; // { id, url, name, comment, selected }
+        let currentFilter = 'all';
+        let currentModalPhotoId = null;
+        let clientName = "Maria & Eduardo";
 
-        // Bloqueios de Segurança Anti-Print / Anti-Download
+        // Segurança Anti-Print / Anti-Download
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P')) {
                 e.preventDefault();
-                alert('Ação bloqueada por motivos de segurança e direitos autorais.');
+                alert('Ação bloqueada por motivos de direitos autorais.');
             }
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c'))) {
                 e.preventDefault();
             }
         });
 
-        // Simulação de lote grande (Exemplo com imagens de placeholder otimizadas)
-        function loadSamplePhotos() {
-            photos = [];
-            const sampleCount = 500;
-            for (let i = 1; i <= sampleCount; i++) {
-                // Usando imagens placeholder dinâmicas
-                photos.push({
-                    id: i,
-                    url: `https://picsum.photos/seed/photo${i}/600/800`,
-                    name: `FOTO_${String(i).padStart(3, '0')}.jpg`
-                });
+        // Verificação de Senha do Fotógrafo
+        function checkAdminLogin() {
+            const pass = document.getElementById('adminPassword').value;
+            if (pass === '1234') {
+                document.getElementById('adminLoginModal').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+            } else {
+                alert('Senha incorreta! A senha padrão é 1234.');
+            }
+        }
+
+        function enterAsClientDemo() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            // Carrega fotos de demonstração caso esteja vazio
+            if(photos.length === 0) {
+                for(let i=1; i<=12; i++) {
+                    photos.push({ id: i, url: `https://picsum.photos/seed/wa${i}/600/800`, name: `FOTO_${String(i).padStart(3, '0')}.jpg`, comment: '', selected: false });
+                }
             }
             renderGrid();
         }
 
-        // Upload Real pelo Fotógrafo
-        function handleFiles(files) {
+        function logoutAdmin() {
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+        }
+
+        function openAdminFromClient() {
+            document.getElementById('adminDashboard').classList.remove('hidden');
+        }
+
+        // Geração da Galeria pelo Fotógrafo
+        function generateClientGallery() {
+            const nameInput = document.getElementById('clientNameInput').value.trim();
+            const fileInput = document.getElementById('clientPhotosInput').files;
+
+            if (!nameInput) {
+                alert('Por favor, digite o nome do cliente.');
+                return;
+            }
+            if (fileInput.length === 0) {
+                alert('Por favor, selecione ao menos uma foto do computador.');
+                return;
+            }
+
+            clientName = nameInput;
+            document.getElementById('clientAlbumName').innerText = `Ensaio: ${clientName}`;
+            document.getElementById('headerAlbumTitle').innerText = clientName;
+
             photos = [];
-            Array.from(files).forEach((file, index) => {
+            Array.from(fileInput).forEach((file, index) => {
                 photos.push({
                     id: index + 1,
                     url: URL.createObjectURL(file),
-                    name: file.name
+                    name: file.name,
+                    comment: '',
+                    selected: false
                 });
             });
+
+            // Gerar Link Personalizado Fictício para Envio
+            const fakeLink = `${window.location.origin}${window.location.pathname}?cliente=${encodeURIComponent(clientName)}`;
+            document.getElementById('shareableLink').value = fakeLink;
+            document.getElementById('generatedLinkContainer').classList.remove('hidden');
+
             renderGrid();
         }
 
-        // Renderizar a Galeria no HTML
+        function copyShareableLink() {
+            const linkBox = document.getElementById('shareableLink');
+            linkBox.select();
+            navigator.clipboard.writeText(linkBox.value);
+            alert('Link copiado com sucesso! Envie agora para a sua cliente no WhatsApp.');
+        }
+
+        function openClientView() {
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        // Renderização do Grid
         function renderGrid() {
             const grid = document.getElementById('photoGrid');
             const emptyState = document.getElementById('emptyState');
-            
+
+            let filteredPhotos = photos.filter(p => {
+                if (currentFilter === 'selected') return p.selected;
+                if (currentFilter === 'unselected') return !p.selected;
+                return true;
+            });
+
             if (photos.length === 0) {
                 emptyState.style.display = 'flex';
                 grid.innerHTML = '';
                 grid.appendChild(emptyState);
-                document.getElementById('floatingBar').classList.add('translate-y-24');
+                updateCounters();
                 return;
             }
 
             emptyState.style.display = 'none';
             let html = '';
 
-            photos.forEach(photo => {
-                const isSelected = selectedPhotos.has(photo.id);
+            filteredPhotos.forEach(photo => {
                 html += `
-                    <div class="group relative aspect-[4/5] bg-slate-900 rounded-2xl overflow-hidden border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200 cursor-pointer" onclick="toggleSelect(${photo.id})">
-                        <!-- Camada de Bloqueio Transparente -->
-                        <div class="protect-overlay"></div>
-                        
-                        <!-- Imagem de Fundo (Protegida) -->
+                    <div class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
+                        <div class="protect-overlay" onclick="openModal(${photo.id})"></div>
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105" style="background-image: url('${photo.url}')"></div>
-
-                        <!-- Marca d'Água Discreta na Foto -->
-                        <div class="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
-                            <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg] border border-white/30 px-2 py-1 rounded">WA PROVA</span>
+                        
+                        <!-- Marca d'Água Dinâmica -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                            <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">WA FOTOGRAFIA</span>
                         </div>
 
-                        <!-- Gradiente Inferior -->
-                        <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
+                        <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
 
-                        <!-- Checkbox / Botão de Seleção -->
-                        <div class="absolute top-3 right-3 z-20">
-                            <div class="w-7 h-7 rounded-full flex items-center justify-center transition ${isSelected ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30' : 'bg-slate-900/60 border border-slate-600 text-transparent hover:border-amber-400'}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            </div>
-                        </div>
+                        <!-- Botão Favorito no Card -->
+                        <button onclick="toggleSelect(${photo.id})" class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center transition ${photo.selected ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30' : 'bg-slate-950/60 border border-slate-700 text-slate-400 hover:text-white'}">
+                            ♥
+                        </button>
 
-                        <!-- Nome da Foto -->
-                        <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between">
+                        <!-- Indicador de Comentário -->
+                        ${photo.comment ? '<div class="absolute top-3 left-3 z-20 bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-md">Comentada</div>' : ''}
+
+                        <!-- Nome -->
+                        <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
                             <span class="text-[11px] font-medium text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/50 truncate">${photo.name}</span>
                         </div>
                     </div>
                 `;
             });
 
-            // Mantém o empty state no DOM se precisar resetar
             grid.innerHTML = html;
-            grid.prepend(emptyState);
+            updateCounters();
         }
 
-        // Selecionar ou Desselecionar Foto
-        function toggleSelect(id) {
-            if (selectedPhotos.has(id)) {
-                selectedPhotos.delete(id);
-            } else {
-                selectedPhotos.add(id);
-            }
-            updateCounters();
+        // Filtros
+        function setFilter(filter) {
+            currentFilter = filter;
+            ['all', 'selected', 'unselected'].forEach(f => {
+                const btn = document.getElementById(`filterBtn${f.charAt(0).toUpperCase() + f.slice(1)}`);
+                if (f === filter) {
+                    btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition";
+                } else {
+                    btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700 transition";
+                }
+            });
             renderGrid();
         }
 
-        // Atualizar Contadores e Barra Flutuante
-        function updateCounters() {
-            const count = selectedPhotos.size;
-            document.getElementById('selectedCount').innerText = count;
-            document.getElementById('barSelectionText').innerText = `${count} foto${count === 1 ? '' : 's'} escolhida${count === 1 ? '' : 's'}`;
-            
-            const floatingBar = document.getElementById('floatingBar');
-            if (count > 0) {
-                floatingBar.classList.remove('translate-y-24');
-            } else {
-                floatingBar.classList.add('translate-y-24');
+        function toggleSelect(id) {
+            const photo = photos.find(p => p.id === id);
+            if (photo) {
+                photo.selected = !photo.selected;
+                renderGrid();
             }
         }
 
-        // Finalizar e Enviar via WhatsApp
-        function finalizeSelection() {
-            if (selectedPhotos.size === 0) {
+        // Contadores
+        function updateCounters() {
+            const total = photos.length;
+            const selected = photos.filter(p => p.selected).length;
+            const unselected = total - selected;
+
+            document.getElementById('selectedCountHeader').innerText = selected;
+            document.getElementById('totalCountBadge').innerText = total;
+            document.getElementById('selectedCountBadge').innerText = selected;
+            document.getElementById('unselectedCountBadge').innerText = unselected;
+            document.getElementById('circularCount').innerText = selected;
+        }
+
+        // Modal de Visualização Detalhada & Comentários
+        function openModal(id) {
+            currentModalPhotoId = id;
+            const photo = photos.find(p => p.id === id);
+            if (!photo) return;
+
+            document.getElementById('modalImg').src = photo.url;
+            document.getElementById('modalPhotoName').innerText = photo.name;
+            document.getElementById('modalComment').value = photo.comment;
+            
+            const btn = document.getElementById('modalToggleSelectBtn');
+            if (photo.selected) {
+                btn.innerText = "Remover dos Favoritos";
+                btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs py-3 rounded-xl transition";
+            } else {
+                btn.innerText = "♥ Favoritar Foto";
+                btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-amber-500/20";
+            }
+
+            document.getElementById('photoModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('photoModal').classList.add('hidden');
+        }
+
+        function saveModalComment() {
+            const photo = photos.find(p => p.id === currentModalPhotoId);
+            if (photo) {
+                photo.comment = document.getElementById('modalComment').value.trim();
+                alert('Comentário salvo com sucesso!');
+                renderGrid();
+            }
+        }
+
+        function toggleSelectCurrentModal() {
+            const photo = photos.find(p => p.id === currentModalPhotoId);
+            if (photo) {
+                photo.selected = !photo.selected;
+                openModal(currentModalPhotoId); // Atualiza botão
+                renderGrid();
+            }
+        }
+
+        // Finalização e Envio ao WhatsApp
+        function finalizeSelectionWhatsApp() {
+            const selectedList = photos.filter(p => p.selected);
+            if (selectedList.length === 0) {
                 alert('Selecione ao menos uma foto antes de enviar.');
                 return;
             }
 
-            const chosenNames = photos
-                .filter(p => selectedPhotos.has(p.id))
-                .map(p => p.name)
-                .join(', ');
+            let msg = `Olá! Terminei a seleção do ensaio de *${clientName}*.\n\nTotal escolhidas: *${selectedList.length} fotos*:\n\n`;
+            
+            selectedList.forEach(p => {
+                msg += `• ${p.name}`;
+                if (p.comment) {
+                    msg += ` (Obs: ${p.comment})`;
+                }
+                msg += `\n`;
+            });
 
-            const message = encodeURIComponent(`Olá! Terminei a minha seleção de fotos. Escolhi ${selectedPhotos.size} fotos:\n\n${chosenNames}`);
-            // Substitua pelo seu número de WhatsApp se desejar (ex: 5584999999999)
-            window.open(`https://wa.me/?text=${message}`, '_blank');
+            const encoded = encodeURIComponent(msg);
+            window.open(`https://wa.me/?text=${encoded}`, '_blank');
         }
     </script>
 </body>
