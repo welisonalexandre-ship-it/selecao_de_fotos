@@ -45,8 +45,8 @@
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
                     <div>
-                        <h1 class="text-lg font-bold text-white">Gestão de Ensaios via Nuvem</h1>
-                        <p class="text-xs text-slate-400">Cadastre clientes e cole os links diretos</p>
+                        <h1 class="text-lg font-bold text-white">Gestão de Ensaios via ImgBB</h1>
+                        <p class="text-xs text-slate-400">Cole as ligações diretas copiadas do ImgBB</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
@@ -58,13 +58,13 @@
                 
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nome do Cliente</label>
-                    <input type="text" id="clientNameInput" placeholder="Ex: Marlos & Juliana" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="text" id="clientNameInput" placeholder="Ex: Susana" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Links Diretos das Fotos (Um link por linha)</label>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas das Fotos (Um link por linha)</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui os links diretos (certifique-se de que terminam em .jpg ou .png).</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as "Ligações diretas" do ImgBB[cite: 10].</p>
                 </div>
 
                 <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
@@ -190,7 +190,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DEFINITIVO -->
+    <!-- SCRIPT DEFINITIVO IMGBB -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -260,11 +260,11 @@
         }
 
         function saveClientsToStorage() {
-            localStorage.setItem('wa_clients_v4', JSON.stringify(clients));
+            localStorage.setItem('wa_clients_imgbb_direct_v1', JSON.stringify(clients));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_v4');
+            const data = localStorage.getItem('wa_clients_imgbb_direct_v1');
             if (data) {
                 try { clients = JSON.parse(data); } catch(e) { clients = []; }
             }
@@ -278,12 +278,12 @@
             const rawLinks = linksInput.value.trim();
 
             if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
-            if (!rawLinks) { alert('Cole ao menos um link de foto.'); linksInput.focus(); return; }
+            if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
 
             const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 0);
 
             if (linkList.length === 0) {
-                alert('Nenhum link válido encontrado.');
+                alert('Nenhuma ligação válida encontrada.');
                 return;
             }
 
