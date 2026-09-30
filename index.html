@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WA Fotografia | Galeria de Seleção Exclusiva</title>
+    <title>Welison Alexandre | Galeria de Seleção Exclusiva</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -21,11 +21,11 @@
     <!-- TELA DE LOGIN DO FOTÓGRAFO -->
     <div id="adminLoginModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
-            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                WA
+            <div class="w-20 h-16 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto mb-4 overflow-hidden p-2">
+                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-h-full max-w-full object-contain" alt="Logo">
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
-            <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus clientes.</p>
+            <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
             <input type="password" id="adminPassword" placeholder="Senha (padrão: 1234)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
             <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20">
                 Acessar Painel
@@ -43,7 +43,9 @@
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
+                    <div class="w-12 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center p-1 overflow-hidden">
+                        <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-h-full max-w-full object-contain">
+                    </div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios</h1>
                         <p class="text-xs text-slate-400">Gere links curtos e profissionais</p>
@@ -62,9 +64,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
-                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../444A1621.jpg&#10;https://i.ibb.co/.../444A1622.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas copiadas do ImgBB[cite: 10]. O sistema usará o nome real dos arquivos automaticamente.</p>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)</label>
+                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB. O sistema usará o nome real dos arquivos automaticamente.</p>
                 </div>
 
                 <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
@@ -83,11 +85,11 @@
     <!-- HEADER DO SITE (Visão da Cliente) -->
     <header class="border-b border-slate-800/80 bg-[#0b0f17]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-bold text-base shadow-lg shadow-amber-500/20">
-                WA
+            <div class="w-14 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center p-1 overflow-hidden shadow-lg shadow-amber-500/10">
+                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-h-full max-w-full object-contain" alt="Logo">
             </div>
             <div>
-                <span class="text-[10px] tracking-widest uppercase text-amber-400 font-semibold block">WA Fotografia</span>
+                <span class="text-[10px] tracking-widest uppercase text-amber-400 font-semibold block">Welison Alexandre</span>
                 <h1 id="headerAlbumTitle" class="font-bold text-sm sm:text-base text-white">Galeria de Seleção</h1>
             </div>
         </div>
@@ -156,8 +158,8 @@
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
                 <img id="modalImg" src="" class="max-h-full max-w-full object-contain pointer-events-none select-none">
-                <div class="absolute inset-0 flex items-center justify-center opacity-25 pointer-events-none">
-                    <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
+                <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none p-4">
+                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[60%] object-contain opacity-60">
                 </div>
             </div>
             <div class="w-full md:w-72 flex flex-col justify-between">
@@ -174,7 +176,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM EXTRAÇÃO DE NOME REAL -->
+    <!-- SCRIPT -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -382,8 +384,8 @@
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         <img src="${photo.url}" loading="lazy" class="absolute inset-0 w-full h-full object-cover cursor-pointer" onclick="openModal(${photo.id})" />
                         
-                        <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none">
-                            <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
+                            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[50%] object-contain opacity-50">
                         </div>
 
                         <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
