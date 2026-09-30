@@ -198,7 +198,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS DE PERSISTÊNCIA REAL PARA O LINK DA CLIENTE -->
+    <!-- SCRIPTS COM REDIMENSIONAMENTO INSTANTÂNEO DE IMAGENS -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -266,13 +266,12 @@
             loadClientAlbum(clients[0].id);
         }
 
-        // Salva os dados e imagens compactadas no banco do navegador
         function saveClientsToStorage() {
-            localStorage.setItem('wa_clients_db_full', JSON.stringify(clients));
+            localStorage.setItem('wa_clients_db_optimized', JSON.stringify(clients));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_db_full');
+            const data = localStorage.getItem('wa_clients_db_optimized');
             if (data) {
                 try {
                     clients = JSON.parse(data);
@@ -280,7 +279,43 @@
             }
         }
 
-        // Cadastro conversor otimizado (Garante que as fotos vão embutidas no link para qualquer dispositivo)
+        // Função mágica que compacta a foto em segundos antes de salvar
+        function compressImage(file, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Otimizado para web sem perder qualidade de prova
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Retorna a imagem compactada em JPEG 75% de qualidade (perfeito e leve)
+                    callback(canvas.toDataURL('image/jpeg', 0.75));
+                }
+            }
+        }
+
         function createNewClient() {
             const nameInput = document.getElementById('clientNameInput');
             const fileInput = document.getElementById('clientPhotosInput');
@@ -299,7 +334,7 @@
                 return;
             }
 
-            saveBtn.innerText = "⏳ Compactando e salvando fotos...";
+            saveBtn.innerText = "⚡ Compactando e salvando fotos (aguarde um instante)...";
             saveBtn.disabled = true;
 
             const clientId = 'cl_' + Date.now();
@@ -308,11 +343,10 @@
             const fileArray = Array.from(files);
 
             fileArray.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
+                compressImage(file, function(compressedUrl) {
                     newPhotos.push({
                         id: index + 1,
-                        url: e.target.result, // Base64 gravado permanentemente para abrir em qualquer celular/PC
+                        url: compressedUrl,
                         name: file.name,
                         comment: '',
                         selected: false
@@ -329,10 +363,9 @@
                         saveBtn.disabled = false;
 
                         renderClientsList();
-                        alert(`Cliente "${name}" cadastrado com sucesso com ${newPhotos.length} fotos! O link agora funcionará perfeitamente em qualquer aparelho.`);
+                        alert(`Sucesso! Cliente "${name}" cadastrado com ${newPhotos.length} fotos prontas para envio.`);
                     }
-                };
-                reader.readAsDataURL(file);
+                });
             });
         }
 
