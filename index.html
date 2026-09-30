@@ -149,11 +149,11 @@
         </div>
     </main>
 
-    <!-- MODAL DE ZOOM / COMENTÁRIOS COM BOTÃO FECHAR EM DESTAQUE -->
+    <!-- MODAL DE ZOOM / COMENTÁRIOS COM BOTÃO FECHAR BEM VISÍVEL -->
     <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl">
-            <!-- BOTÃO FECHAR EM DESTAQUE ABSOLUTO -->
-            <button onclick="closeModal()" class="absolute -top-3 -right-3 md:top-4 md:right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-10 h-10 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/30 transition text-base border-2 border-slate-900">✕</button>
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl mt-8">
+            <!-- BOTÃO FECHAR BEM MAIOR E MAIS BAIXO -->
+            <button onclick="closeModal()" class="absolute -top-6 right-2 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-12 h-12 rounded-full flex items-center justify-center shadow-2xl shadow-amber-500/50 transition text-lg border-2 border-slate-950">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
                 <img id="modalImg" src="" class="max-h-full max-w-full object-contain pointer-events-none select-none">
@@ -465,7 +465,7 @@
         }
 
         function toggleSelectCurrentModal() {
-            const photo = currentAlbum.photos.features.find(p => p.id === currentModalPhotoId) || currentAlbum.photos.find(p => p.id === currentModalPhotoId);
+            const photo = currentAlbum.photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 toggleSelect(photo.id);
                 openModal(currentModalPhotoId); 
