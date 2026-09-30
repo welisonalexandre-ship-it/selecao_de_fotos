@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WA Fotografia | Galeria de Seleção Exclusiva</title>
+    <title>WA Fotografia | Gestão de Clientes e Ensaios</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -25,64 +25,56 @@
                 WA
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
-            <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar os álbuns dos clientes.</p>
+            <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus clientes.</p>
             <input type="password" id="adminPassword" placeholder="Senha (padrão: 1234)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
             <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20">
                 Acessar Painel
             </button>
             <div class="mt-6 border-t border-slate-800 pt-4">
                 <button onclick="enterAsClientDemo()" class="text-xs text-slate-400 hover:text-amber-400 transition underline">
-                    Visualizar como Cliente (Modo Demonstração)
+                    Visualizar Ensaio Demonstração
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- PAINEL DE GESTÃO DO FOTÓGRAFO -->
-    <div id="adminDashboard" class="fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-6">
-        <div class="max-w-3xl mx-auto py-10">
+    <!-- PAINEL DE GESTÃO DE CLIENTES (BANCO DE DADOS LOCAL) -->
+    <div id="adminDashboard" class="fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-4 sm:p-8">
+        <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
                     <div>
-                        <h1 class="text-lg font-bold text-white">Gerenciador de Ensaios</h1>
-                        <p class="text-xs text-slate-400">Crie o link de seleção para sua cliente</p>
+                        <h1 class="text-lg font-bold text-white">Banco de Dados de Clientes</h1>
+                        <p class="text-xs text-slate-400">Cadastre clientes e gerencie os álbuns de fotos</p>
                     </div>
                 </div>
-                <button onclick="logoutAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Sair do Painel</button>
+                <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-xl space-y-6">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Nome do Cliente / Ensaio</label>
-                    <input type="text" id="clientNameInput" placeholder="Ex: Maria & Eduardo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+            <!-- Cadastro de Novo Cliente -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-8 backdrop-blur-xl shadow-xl space-y-4">
+                <h2 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">➕ Cadastrar Novo Cliente / Ensaio</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input type="text" id="newClientName" placeholder="Nome do Cliente (Ex: Maria & Eduardo)" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="file" id="newClientPhotos" multiple accept="image/*" class="bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
                 </div>
-
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Carregar Fotos do Ensaio</label>
-                    <input type="file" id="clientPhotosInput" multiple accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
-                    <p class="text-[11px] text-slate-500 mt-2">Selecione todas as fotos do ensaio de uma vez no seu computador.</p>
-                </div>
-
-                <button onclick="generateClientGallery()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                    ✨ Criar Galeria e Gerar Link Exclusivo
+                <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
+                    Salvar Cliente e Gerar Link de Seleção
                 </button>
             </div>
 
-            <!-- Link Gerado -->
-            <div id="generatedLinkContainer" class="hidden mt-6 bg-slate-900 border border-emerald-500/30 p-6 rounded-3xl text-center">
-                <h3 class="text-sm font-semibold text-emerald-400 mb-2">Link gerado com sucesso!</h3>
-                <p class="text-xs text-slate-300 mb-4">Envie este link direto para o WhatsApp da sua cliente:</p>
-                <div class="flex items-center space-x-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <input type="text" id="shareableLink" readonly class="w-full bg-transparent text-xs text-slate-300 focus:outline-none">
-                    <button onclick="copyShareableLink()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition whitespace-nowrap">Copiar</button>
+            <!-- Lista de Clientes Cadastrados -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">📂 Clientes Cadastrados</h2>
+                <div id="clientsListContainer" class="space-y-3">
+                    <!-- Preenchido via JavaScript -->
                 </div>
-                <button onclick="openClientView()" class="mt-4 bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 px-6 py-2.5 rounded-xl text-xs font-semibold transition">Abrir Galeria como Cliente →</button>
             </div>
         </div>
     </div>
 
-    <!-- HEADER DO SITE (Visão da Cliente) -->
+    <!-- HEADER DO SITE (Visão da Galeria) -->
     <header class="border-b border-slate-800/80 bg-[#0b0f17]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-bold text-base shadow-lg shadow-amber-500/20">
@@ -95,8 +87,8 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <button onclick="openAdminFromClient()" class="text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
-                ⚙️ Painel Fotógrafo
+            <button onclick="openAdminDashboard()" class="text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+                ⚙️ Painel de Clientes
             </button>
             <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -149,8 +141,8 @@
                 <!-- Vazio Inicial -->
                 <div id="emptyState" class="col-span-full py-24 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
                     <svg class="w-16 h-16 text-slate-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <h3 class="text-base font-medium text-slate-300">Nenhuma foto carregada neste álbum</h3>
-                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Entre no painel do fotógrafo para cadastrar o cliente e carregar as fotos.</p>
+                    <h3 class="text-base font-medium text-slate-300">Nenhum cliente selecionado</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Abra o painel de clientes acima para cadastrar ou carregar um ensaio.</p>
                 </div>
             </div>
         </div>
@@ -183,14 +175,33 @@
         </div>
     </div>
 
-    <!-- SCRIPTS DE LÓGICA E SEGURANÇA -->
+    <!-- SCRIPTS DE GESTÃO E BANCO DE DADOS -->
     <script>
-        let photos = []; 
+        let clients = []; // Banco de dados local de clientes
+        let currentClientId = null;
         let currentFilter = 'all';
         let currentModalPhotoId = null;
-        let clientName = "Maria & Eduardo";
 
-        // Segurança Anti-Print / Anti-Download
+        // Inicialização
+        window.onload = function() {
+            loadClientsFromStorage();
+            
+            // Verifica se o link tem parâmetro de cliente (ex: ?cliente=1)
+            const urlParams = new URLSearchParams(window.location.search);
+            const clientParam = urlParams.get('cliente');
+
+            if (clientParam) {
+                // Modo Cliente: Esconde login e carrega o cliente específico do link
+                document.getElementById('adminLoginModal').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
+                loadClientAlbum(clientParam);
+            } else if (clients.length > 0) {
+                // Mantém painel aberto para o fotógrafo escolher
+                renderClientsList();
+            }
+        };
+
+        // Segurança Anti-Print
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P')) {
@@ -206,95 +217,178 @@
             const pass = document.getElementById('adminPassword').value;
             if (pass === '1234') {
                 document.getElementById('adminLoginModal').classList.add('hidden');
+                renderClientsList();
             } else {
                 alert('Senha incorreta! A senha padrão é 1234.');
             }
         }
 
+        function lockAdminPanel() {
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+        }
+
+        function openAdminDashboard() {
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            renderClientsList();
+        }
+
         function enterAsClientDemo() {
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
-            if(photos.length === 0) {
+            
+            // Cria um cliente demo se não existir
+            if(clients.length === 0) {
+                let demoPhotos = [];
                 for(let i=1; i<=12; i++) {
-                    photos.push({ id: i, url: `https://picsum.photos/seed/wa${i}/600/800`, name: `FOTO_${String(i).padStart(3, '0')}.jpg`, comment: '', selected: false });
+                    demoPhotos.push({ id: i, url: `https://picsum.photos/seed/wa${i}/600/800`, name: `FOTO_${String(i).padStart(3, '0')}.jpg`, comment: '', selected: false });
                 }
+                clients.push({ id: 'demo1', name: 'Maria & Eduardo (Demo)', photos: demoPhotos });
+                saveClientsToStorage();
             }
-            renderGrid();
+            loadClientAlbum(clients[0].id);
         }
 
-        function logoutAdmin() {
-            document.getElementById('adminDashboard').classList.remove('hidden');
+        // Salvar e Carregar do Banco Local (LocalStorage)
+        function saveClientsToStorage() {
+            localStorage.setItem('wa_clients_db', JSON.stringify(clients));
         }
 
-        function openAdminFromClient() {
-            document.getElementById('adminDashboard').classList.remove('hidden');
+        function loadClientsFromStorage() {
+            const data = localStorage.getItem('wa_clients_db');
+            if (data) {
+                try { clients = JSON.parse(data); } catch(e) { clients = []; }
+            }
         }
 
-        function generateClientGallery() {
-            const nameInput = document.getElementById('clientNameInput').value.trim();
-            const fileInput = document.getElementById('clientPhotosInput').files;
+        // Criar Novo Cliente no Banco de Dados
+        function createNewClient() {
+            const name = document.getElementById('newClientName').value.trim();
+            const fileInput = document.getElementById('newClientPhotos').files;
 
-            if (!nameInput) {
-                alert('Por favor, digite o nome do cliente.');
+            if (!name) {
+                alert('Digite o nome do cliente.');
                 return;
             }
             if (fileInput.length === 0) {
-                alert('Por favor, selecione ao menos uma foto do computador.');
+                alert('Selecione as fotos do ensaio.');
                 return;
             }
 
-            clientName = nameInput;
-            document.getElementById('clientAlbumName').innerText = `Ensaio: ${clientName}`;
-            document.getElementById('headerAlbumTitle').innerText = clientName;
+            const clientId = 'cl_' + Date.now();
+            let newPhotos = [];
 
-            photos = [];
-            Array.from(fileInput).forEach((file, index) => {
-                photos.push({
-                    id: index + 1,
-                    url: URL.createObjectURL(file),
-                    name: file.name,
-                    comment: '',
-                    selected: false
-                });
+            const files = Array.from(fileInput);
+            let processed = 0;
+
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newPhotos.push({
+                        id: index + 1,
+                        url: e.target.result, // Base64 otimizado
+                        name: file.name,
+                        comment: '',
+                        selected: false
+                    });
+                    processed++;
+                    if (processed === files.length) {
+                        clients.push({ id: clientId, name: name, photos: newPhotos });
+                        saveClientsToStorage();
+                        document.getElementById('newClientName').value = '';
+                        document.getElementById('newClientPhotos').value = '';
+                        renderClientsList();
+                        alert(`Cliente "${name}" cadastrado com sucesso!`);
+                    }
+                };
+                reader.readAsDataURL(file);
             });
-
-            const fakeLink = `${window.location.origin}${window.location.pathname}`;
-            document.getElementById('shareableLink').value = fakeLink;
-            document.getElementById('generatedLinkContainer').classList.remove('hidden');
-
-            renderGrid();
         }
 
-        function copyShareableLink() {
-            const linkBox = document.getElementById('shareableLink');
-            linkBox.select();
-            navigator.clipboard.writeText(linkBox.value);
-            alert('Link copiado com sucesso! Envie agora para a sua cliente no WhatsApp.');
+        // Renderizar Lista de Clientes no Painel do Fotógrafo
+        function renderClientsList() {
+            const container = document.getElementById('clientsListContainer');
+            if (clients.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">Nenhum cliente cadastrado ainda.</p>';
+                return;
+            }
+
+            let html = '';
+            clients.forEach(c => {
+                const selectedCount = c.photos.filter(p => p.selected).length;
+                const link = `${window.location.origin}${window.location.pathname}?cliente=${c.id}`;
+
+                html += `
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-sm text-white">${c.name}</h3>
+                            <p class="text-xs text-slate-400">Total de fotos: ${c.photos.length} | Selecionadas: <strong class="text-amber-400">${selectedCount}</strong></p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <button onclick="copyClientLink('${link}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
+                            <button onclick="loadClientAlbum('${c.id}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</button>
+                            <button onclick="deleteClient('${c.id}')" class="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs px-3 py-2 rounded-xl transition">Excluir</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
-        function openClientView() {
+        function copyClientLink(link) {
+            navigator.clipboard.writeText(link);
+            alert('Link exclusivo do cliente copiado com sucesso! Envie no WhatsApp dele.');
+        }
+
+        function deleteClient(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente e todas as suas fotos?')) {
+                clients = clients.filter(c => c.id !== id);
+                saveClientsToStorage();
+                renderClientsList();
+            }
+        }
+
+        // Carregar o Ensaio do Cliente na Tela da Galeria
+        function loadClientAlbum(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) {
+                alert('Cliente não encontrado.');
+                return;
+            }
+
+            currentClientId = client.id;
+            document.getElementById('clientAlbumName').innerText = `Ensaio: ${client.name}`;
+            document.getElementById('headerAlbumTitle').innerText = client.name;
             document.getElementById('adminDashboard').classList.add('hidden');
+
             renderGrid();
         }
 
-        // Renderização limpa
+        // Renderização do Grid de Fotos do Cliente Atual
         function renderGrid() {
             const grid = document.getElementById('photoGrid');
             const emptyState = document.getElementById('emptyState');
 
-            let filteredPhotos = photos.filter(p => {
-                if (currentFilter === 'selected') return p.selected;
-                if (currentFilter === 'unselected') return !p.selected;
-                return true;
-            });
+            if (!currentClientId) {
+                emptyState.style.display = 'flex';
+                grid.innerHTML = '';
+                grid.appendChild(emptyState);
+                return;
+            }
 
-            if (photos.length === 0) {
+            const client = clients.find(c => c.id === currentClientId);
+            if (!client || client.photos.length === 0) {
                 emptyState.style.display = 'flex';
                 grid.innerHTML = '';
                 grid.appendChild(emptyState);
                 updateCounters();
                 return;
             }
+
+            let filteredPhotos = client.photos.filter(p => {
+                if (currentFilter === 'selected') return p.selected;
+                if (currentFilter === 'unselected') return !p.selected;
+                return true;
+            });
 
             emptyState.style.display = 'none';
             let html = '';
@@ -304,26 +398,20 @@
                 
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
-                        
-                        <!-- Imagem de Fundo -->
                         <div class="absolute inset-0 bg-cover bg-center cursor-pointer" style="background-image: url('${photo.url}')" onclick="openModal(${photo.id})"></div>
                         
-                        <!-- Marca d'Água -->
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none">
                             <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
                         </div>
 
                         <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
 
-                        <!-- Botão Coração com ID direto para resposta imediata -->
                         <button id="heart-${photo.id}" onclick="toggleSelect(${photo.id})" class="absolute top-3 right-3 z-30 w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer ${heartBg}">
                             ♥
                         </button>
 
-                        <!-- Indicador de Comentário -->
                         <div id="badge-${photo.id}" class="absolute top-3 left-3 z-20 bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-md pointer-events-none ${photo.comment ? '' : 'hidden'}">Comentada</div>
 
-                        <!-- Nome -->
                         <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
                             <span class="text-[11px] font-medium text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/50 truncate">${photo.name}</span>
                         </div>
@@ -349,14 +437,16 @@
             renderGrid();
         }
 
-        // Atualização Direta e Instantânea sem recriar se o filtro for 'all'
+        // Favoritar Foto em Tempo Real
         function toggleSelect(id) {
-            const photo = photos.find(p => p.id === id);
+            if (!currentClientId) return;
+            const client = clients.find(c => c.id === currentClientId);
+            const photo = client.photos.find(p => p.id === id);
             if (!photo) return;
 
             photo.selected = !photo.selected;
+            saveClientsToStorage();
 
-            // Se estivermos na aba "Todas as fotos", atualizamos apenas o card específico na hora (sem sumir ou piscar o grid)
             if (currentFilter === 'all') {
                 const card = document.getElementById(`card-${id}`);
                 const heart = document.getElementById(`heart-${id}`);
@@ -370,15 +460,15 @@
                 }
                 updateCounters();
             } else {
-                // Se estiver em outra aba (ex: Selecionadas), renderizamos o grid para filtrar corretamente
                 renderGrid();
             }
         }
 
-        // Contadores
         function updateCounters() {
-            const total = photos.length;
-            const selected = photos.filter(p => p.selected).length;
+            if (!currentClientId) return;
+            const client = clients.find(c => c.id === currentClientId);
+            const total = client.photos.length;
+            const selected = client.photos.filter(p => p.selected).length;
             const unselected = total - selected;
 
             document.getElementById('selectedCountHeader').innerText = selected;
@@ -388,10 +478,11 @@
             document.getElementById('circularCount').innerText = selected;
         }
 
-        // Modal de Visualização Detalhada & Comentários
+        // Modal de Comentários
         function openModal(id) {
             currentModalPhotoId = id;
-            const photo = photos.find(p => p.id === id);
+            const client = clients.find(c => c.id === currentClientId);
+            const photo = client.photos.find(p => p.id === id);
             if (!photo) return;
 
             document.getElementById('modalImg').src = photo.url;
@@ -415,9 +506,11 @@
         }
 
         function saveModalComment() {
-            const photo = photos.find(p => p.id === currentModalPhotoId);
+            const client = clients.find(c => c.id === currentClientId);
+            const photo = client.photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 photo.comment = document.getElementById('modalComment').value.trim();
+                saveClientsToStorage();
                 const badge = document.getElementById(`badge-${currentModalPhotoId}`);
                 if (badge) {
                     if (photo.comment) badge.classList.remove('hidden');
@@ -429,22 +522,26 @@
         }
 
         function toggleSelectCurrentModal() {
-            const photo = photos.find(p => p.id === currentModalPhotoId);
+            const client = clients.find(c => c.id === currentClientId);
+            const photo = client.photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 toggleSelect(photo.id);
                 openModal(currentModalPhotoId); 
             }
         }
 
-        // Finalização e Envio ao WhatsApp
+        // Envio da Seleção ao WhatsApp com o Nome do Cliente Identificado
         function finalizeSelectionWhatsApp() {
-            const selectedList = photos.filter(p => p.selected);
+            const client = clients.find(c => c.id === currentClientId);
+            if (!client) return;
+
+            const selectedList = client.photos.filter(p => p.selected);
             if (selectedList.length === 0) {
                 alert('Selecione ao menos uma foto antes de enviar.');
                 return;
             }
 
-            let msg = `Olá! Terminei a seleção do ensaio de *${clientName}*.\n\nTotal escolhidas: *${selectedList.length} fotos*:\n\n`;
+            let msg = `Olá! Terminei a seleção do ensaio de *${client.name}*.\n\nTotal escolhidas: *${selectedList.length} fotos*:\n\n`;
             
             selectedList.forEach(p => {
                 msg += `• ${p.name}`;
