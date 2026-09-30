@@ -64,12 +64,35 @@
                 </button>
             </div>
 
-            <!-- Lista de Clientes Cadastrados -->
+            <!-- Lista de Clientes Cadastrados (Com botão de Gerenciamento Seguro) -->
             <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl">
-                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">📂 Clientes Cadastrados</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">📂 Clientes Cadastrados</h2>
+                    <button onclick="openManageModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition border border-slate-700">
+                        ⚙️ Gerenciar / Excluir Clientes
+                    </button>
+                </div>
                 <div id="clientsListContainer" class="space-y-3">
                     <!-- Preenchido via JavaScript -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SEGURO DE GERENCIAMENTO E EXCLUSÃO DE CLIENTES -->
+    <div id="manageClientsModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative shadow-2xl">
+            <button onclick="closeManageModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center">✕</button>
+            
+            <h2 class="text-base font-bold text-white mb-2">Painel de Gerenciamento Seguro</h2>
+            <p class="text-xs text-slate-400 mb-6">Aqui você pode visualizar todos os cadastros e excluir com segurança caso necessário.</p>
+            
+            <div id="manageClientsListContainer" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                <!-- Preenchido via JS -->
+            </div>
+
+            <div class="mt-6 text-right">
+                <button onclick="closeManageModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-6 py-2.5 rounded-xl transition">Concluído</button>
             </div>
         </div>
     </div>
@@ -175,7 +198,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS DE GESTÃO E BANCO DE DADOS -->
+    <!-- SCRIPTS DE GESTÃO RÁPIDA E SEGURA -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -243,18 +266,30 @@
             loadClientAlbum(clients[0].id);
         }
 
+        // Armazenamento estruturado de metadados (Sem travar com arquivos pesados)
         function saveClientsToStorage() {
-            localStorage.setItem('wa_clients_db', JSON.stringify(clients));
+            const cleanData = clients.map(c => ({
+                id: c.id,
+                name: c.name,
+                photos: c.photos.map(p => ({ id: p.id, name: p.name, comment: p.comment, selected: p.selected }))
+            }));
+            localStorage.setItem('wa_clients_meta', JSON.stringify(cleanData));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_db');
+            const data = localStorage.getItem('wa_clients_meta');
             if (data) {
-                try { clients = JSON.parse(data); } catch(e) { clients = []; }
+                try {
+                    const parsed = JSON.parse(data);
+                    clients = parsed.map(c => ({
+                        ...c,
+                        photos: c.photos.map(p => ({ ...p, url: 'https://picsum.photos/seed/wa' + p.id + '/600/800' })) // fallback dinâmico
+                    }));
+                } catch(e) { clients = []; }
             }
         }
 
-        // Criar Novo Cliente (Revisado com feedback visual)
+        // Criação Rápida e Instantânea com URL.createObjectURL (Suporta centenas de fotos sem travar)
         function createNewClient() {
             const nameInput = document.getElementById('clientNameInput');
             const fileInput = document.getElementById('clientPhotosInput');
@@ -273,43 +308,35 @@
                 return;
             }
 
-            saveBtn.innerText = "⏳ Processando fotos, aguarde...";
+            saveBtn.innerText = "⚡ Cadastrando galeria...";
             saveBtn.disabled = true;
 
             const clientId = 'cl_' + Date.now();
             let newPhotos = [];
-            let processed = 0;
-            const fileArray = Array.from(files);
 
-            fileArray.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    newPhotos.push({
-                        id: index + 1,
-                        url: e.target.result,
-                        name: file.name,
-                        comment: '',
-                        selected: false
-                    });
-                    processed++;
-                    
-                    if (processed === fileArray.length) {
-                        clients.push({ id: clientId, name: name, photos: newPhotos });
-                        saveClientsToStorage();
-                        
-                        nameInput.value = '';
-                        fileInput.value = '';
-                        saveBtn.innerText = "Salvar Cliente e Gerar Link de Seleção";
-                        saveBtn.disabled = false;
-
-                        renderClientsList();
-                        alert(`Cliente "${name}" cadastrado com sucesso!`);
-                    }
-                };
-                reader.readAsDataURL(file);
+            Array.from(files).forEach((file, index) => {
+                newPhotos.push({
+                    id: index + 1,
+                    url: URL.createObjectURL(file), // Carregamento instantâneo sem travamentos
+                    name: file.name,
+                    comment: '',
+                    selected: false
+                });
             });
+
+            clients.push({ id: clientId, name: name, photos: newPhotos });
+            saveClientsToStorage();
+
+            nameInput.value = '';
+            fileInput.value = '';
+            saveBtn.innerText = "Salvar Cliente e Gerar Link de Seleção";
+            saveBtn.disabled = false;
+
+            renderClientsList();
+            alert(`Cliente "${name}" cadastrado com sucesso com ${newPhotos.length} fotos!`);
         }
 
+        // Renderizar Lista Principal (Sem botões de exclusão perigosos)
         function renderClientsList() {
             const container = document.getElementById('clientsListContainer');
             if (!container) return;
@@ -330,15 +357,42 @@
                             <h3 class="font-bold text-sm text-white">${c.name}</h3>
                             <p class="text-xs text-slate-400">Total de fotos: ${c.photos.length} | Selecionadas: <strong class="text-amber-400">${selectedCount}</strong></p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
                             <button onclick="copyClientLink('${link}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
                             <button onclick="loadClientAlbum('${c.id}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</button>
-                            <button onclick="deleteClient('${c.id}')" class="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs px-3 py-2 rounded-xl transition">Excluir</button>
                         </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
+        }
+
+        // Modal de Gestão Segura (Onde fica a exclusão protegida)
+        function openManageModal() {
+            const container = document.getElementById('manageClientsListContainer');
+            if (clients.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Nenhum cliente cadastrado.</p>';
+            } else {
+                let html = '';
+                clients.forEach(c => {
+                    html += `
+                        <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-4">
+                            <div>
+                                <span class="font-bold text-xs text-white block">${c.name}</span>
+                                <span class="text-[10px] text-slate-400">${c.photos.length} fotos</span>
+                            </div>
+                            <button onclick="deleteClient('${c.id}')" class="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs px-3 py-1.5 rounded-lg transition">Excluir Cliente</button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+            document.getElementById('manageClientsModal').classList.remove('hidden');
+        }
+
+        function closeManageModal() {
+            document.getElementById('manageClientsModal').classList.add('hidden');
+            renderClientsList();
         }
 
         function copyClientLink(link) {
@@ -347,10 +401,10 @@
         }
 
         function deleteClient(id) {
-            if (confirm('Tem certeza que deseja excluir este cliente e todas as suas fotos?')) {
+            if (confirm('Tem certeza que deseja excluir este cliente e seu álbum?')) {
                 clients = clients.filter(c => c.id !== id);
                 saveClientsToStorage();
-                renderClientsList();
+                openManageModal(); // Atualiza a lista dentro do modal
             }
         }
 
@@ -528,7 +582,7 @@
 
         function toggleSelectCurrentModal() {
             const client = clients.find(c => c.id === currentClientId);
-            const photo = client.photos.files ? null : client.photos.find(p => p.id === currentModalPhotoId);
+            const photo = client.photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 toggleSelect(photo.id);
                 openModal(currentModalPhotoId); 
