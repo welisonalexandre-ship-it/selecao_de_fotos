@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <!-- PAINEL DE GESTÃO DE CLIENTES (BANCO DE DADOS LOCAL) -->
+    <!-- PAINEL DE GESTÃO DE CLIENTES -->
     <div id="adminDashboard" class="fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-4 sm:p-8">
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
@@ -56,10 +56,10 @@
             <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-8 backdrop-blur-xl shadow-xl space-y-4">
                 <h2 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">➕ Cadastrar Novo Cliente / Ensaio</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="text" id="newClientName" placeholder="Nome do Cliente (Ex: Maria & Eduardo)" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
-                    <input type="file" id="newClientPhotos" multiple accept="image/*" class="bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
+                    <input type="text" id="clientNameInput" placeholder="Nome do Cliente (Ex: Maria & Eduardo)" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="file" id="clientPhotosInput" multiple accept="image/*" class="bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
                 </div>
-                <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
+                <button id="saveClientBtn" onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
                     Salvar Cliente e Gerar Link de Seleção
                 </button>
             </div>
@@ -177,26 +177,22 @@
 
     <!-- SCRIPTS DE GESTÃO E BANCO DE DADOS -->
     <script>
-        let clients = []; // Banco de dados local de clientes
+        let clients = []; 
         let currentClientId = null;
         let currentFilter = 'all';
         let currentModalPhotoId = null;
 
-        // Inicialização
         window.onload = function() {
             loadClientsFromStorage();
             
-            // Verifica se o link tem parâmetro de cliente (ex: ?cliente=1)
             const urlParams = new URLSearchParams(window.location.search);
             const clientParam = urlParams.get('cliente');
 
             if (clientParam) {
-                // Modo Cliente: Esconde login e carrega o cliente específico do link
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
                 loadClientAlbum(clientParam);
             } else if (clients.length > 0) {
-                // Mantém painel aberto para o fotógrafo escolher
                 renderClientsList();
             }
         };
@@ -236,7 +232,6 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
             
-            // Cria um cliente demo se não existir
             if(clients.length === 0) {
                 let demoPhotos = [];
                 for(let i=1; i<=12; i++) {
@@ -248,7 +243,6 @@
             loadClientAlbum(clients[0].id);
         }
 
-        // Salvar e Carregar do Banco Local (LocalStorage)
         function saveClientsToStorage() {
             localStorage.setItem('wa_clients_db', JSON.stringify(clients));
         }
@@ -260,42 +254,54 @@
             }
         }
 
-        // Criar Novo Cliente no Banco de Dados
+        // Criar Novo Cliente (Revisado com feedback visual)
         function createNewClient() {
-            const name = document.getElementById('newClientName').value.trim();
-            const fileInput = document.getElementById('newClientPhotos').files;
+            const nameInput = document.getElementById('clientNameInput');
+            const fileInput = document.getElementById('clientPhotosInput');
+            const saveBtn = document.getElementById('saveClientBtn');
+
+            const name = nameInput.value.trim();
+            const files = fileInput.files;
 
             if (!name) {
-                alert('Digite o nome do cliente.');
+                alert('Por favor, digite o nome do cliente.');
+                nameInput.focus();
                 return;
             }
-            if (fileInput.length === 0) {
-                alert('Selecione as fotos do ensaio.');
+            if (!files || files.length === 0) {
+                alert('Por favor, selecione ao menos uma foto.');
                 return;
             }
+
+            saveBtn.innerText = "⏳ Processando fotos, aguarde...";
+            saveBtn.disabled = true;
 
             const clientId = 'cl_' + Date.now();
             let newPhotos = [];
-
-            const files = Array.from(fileInput);
             let processed = 0;
+            const fileArray = Array.from(files);
 
-            files.forEach((file, index) => {
+            fileArray.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     newPhotos.push({
                         id: index + 1,
-                        url: e.target.result, // Base64 otimizado
+                        url: e.target.result,
                         name: file.name,
                         comment: '',
                         selected: false
                     });
                     processed++;
-                    if (processed === files.length) {
+                    
+                    if (processed === fileArray.length) {
                         clients.push({ id: clientId, name: name, photos: newPhotos });
                         saveClientsToStorage();
-                        document.getElementById('newClientName').value = '';
-                        document.getElementById('newClientPhotos').value = '';
+                        
+                        nameInput.value = '';
+                        fileInput.value = '';
+                        saveBtn.innerText = "Salvar Cliente e Gerar Link de Seleção";
+                        saveBtn.disabled = false;
+
                         renderClientsList();
                         alert(`Cliente "${name}" cadastrado com sucesso!`);
                     }
@@ -304,9 +310,10 @@
             });
         }
 
-        // Renderizar Lista de Clientes no Painel do Fotógrafo
         function renderClientsList() {
             const container = document.getElementById('clientsListContainer');
+            if (!container) return;
+
             if (clients.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">Nenhum cliente cadastrado ainda.</p>';
                 return;
@@ -347,7 +354,6 @@
             }
         }
 
-        // Carregar o Ensaio do Cliente na Tela da Galeria
         function loadClientAlbum(id) {
             const client = clients.find(c => c.id === id);
             if (!client) {
@@ -363,7 +369,6 @@
             renderGrid();
         }
 
-        // Renderização do Grid de Fotos do Cliente Atual
         function renderGrid() {
             const grid = document.getElementById('photoGrid');
             const emptyState = document.getElementById('emptyState');
@@ -423,11 +428,11 @@
             updateCounters();
         }
 
-        // Filtros
         function setFilter(filter) {
             currentFilter = filter;
             ['all', 'selected', 'unselected'].forEach(f => {
                 const btn = document.getElementById(`filterBtn${f.charAt(0).toUpperCase() + f.slice(1)}`);
+                if (!btn) return;
                 if (f === filter) {
                     btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition";
                 } else {
@@ -437,7 +442,6 @@
             renderGrid();
         }
 
-        // Favoritar Foto em Tempo Real
         function toggleSelect(id) {
             if (!currentClientId) return;
             const client = clients.find(c => c.id === currentClientId);
@@ -467,6 +471,8 @@
         function updateCounters() {
             if (!currentClientId) return;
             const client = clients.find(c => c.id === currentClientId);
+            if (!client) return;
+
             const total = client.photos.length;
             const selected = client.photos.filter(p => p.selected).length;
             const unselected = total - selected;
@@ -478,7 +484,6 @@
             document.getElementById('circularCount').innerText = selected;
         }
 
-        // Modal de Comentários
         function openModal(id) {
             currentModalPhotoId = id;
             const client = clients.find(c => c.id === currentClientId);
@@ -523,14 +528,13 @@
 
         function toggleSelectCurrentModal() {
             const client = clients.find(c => c.id === currentClientId);
-            const photo = client.photos.find(p => p.id === currentModalPhotoId);
+            const photo = client.photos.files ? null : client.photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 toggleSelect(photo.id);
                 openModal(currentModalPhotoId); 
             }
         }
 
-        // Envio da Seleção ao WhatsApp com o Nome do Cliente Identificado
         function finalizeSelectionWhatsApp() {
             const client = clients.find(c => c.id === currentClientId);
             if (!client) return;
