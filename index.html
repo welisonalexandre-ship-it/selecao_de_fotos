@@ -43,7 +43,7 @@
     </div>
 
     <!-- PAINEL DE GESTÃO DO FOTÓGRAFO -->
-    <div id="adminDashboard" class="hidden fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-6">
+    <div id="adminDashboard" class="fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-6">
         <div class="max-w-3xl mx-auto py-10">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-3">
@@ -81,7 +81,7 @@
                     <input type="text" id="shareableLink" readonly class="w-full bg-transparent text-xs text-slate-300 focus:outline-none">
                     <button onclick="copyShareableLink()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition whitespace-nowrap">Copiar</button>
                 </div>
-                <button onclick="openClientView()" class="mt-4 text-xs text-amber-400 hover:underline">Abrir galeria como a cliente vê</button>
+                <button onclick="openClientView()" class="mt-4 bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 px-6 py-2.5 rounded-xl text-xs font-semibold transition">Abrir Galeria como Cliente →</button>
             </div>
         </div>
     </div>
@@ -188,35 +188,12 @@
         </div>
     </div>
 
-    <!-- SCRIPTS DE LÓGICA E PERSISTÊNCIA -->
+    <!-- SCRIPTS DE LÓGICA E SEGURANÇA -->
     <script>
         let photos = []; 
         let currentFilter = 'all';
         let currentModalPhotoId = null;
         let clientName = "Maria & Eduardo";
-
-        // Carrega dados salvos anteriormente (para o F5 não apagar a seleção)
-        window.onload = function() {
-            const savedPhotos = localStorage.getItem('wa_photos');
-            const savedClient = localStorage.getItem('wa_client');
-            
-            if (savedClient) {
-                clientName = savedClient;
-                document.getElementById('clientAlbumName').innerText = `Ensaio: ${clientName}`;
-                document.getElementById('headerAlbumTitle').innerText = clientName;
-            }
-
-            if (savedPhotos) {
-                try {
-                    photos = JSON.parse(savedPhotos);
-                    // Se tiver fotos salvas, oculta o login e vai direto para a galeria
-                    if(photos.length > 0) {
-                        document.getElementById('adminLoginModal').classList.add('hidden');
-                        renderGrid();
-                    }
-                } catch(e) { console.error(e); }
-            }
-        };
 
         // Segurança Anti-Print / Anti-Download
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -230,12 +207,10 @@
             }
         });
 
-        // Verificação de Senha do Fotógrafo
         function checkAdminLogin() {
             const pass = document.getElementById('adminPassword').value;
             if (pass === '1234') {
                 document.getElementById('adminLoginModal').classList.add('hidden');
-                document.getElementById('adminDashboard').classList.remove('hidden');
             } else {
                 alert('Senha incorreta! A senha padrão é 1234.');
             }
@@ -243,25 +218,24 @@
 
         function enterAsClientDemo() {
             document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
             if(photos.length === 0) {
                 for(let i=1; i<=12; i++) {
                     photos.push({ id: i, url: `https://picsum.photos/seed/wa${i}/600/800`, name: `FOTO_${String(i).padStart(3, '0')}.jpg`, comment: '', selected: false });
                 }
-                saveData();
             }
             renderGrid();
         }
 
         function logoutAdmin() {
-            document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('adminLoginModal').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
         }
 
         function openAdminFromClient() {
             document.getElementById('adminDashboard').classList.remove('hidden');
         }
 
-        // Geração da Galeria pelo Fotógrafo
+        // Geração Instantânea da Galeria
         function generateClientGallery() {
             const nameInput = document.getElementById('clientNameInput').value.trim();
             const fileInput = document.getElementById('clientPhotosInput').files;
@@ -280,36 +254,21 @@
             document.getElementById('headerAlbumTitle').innerText = clientName;
 
             photos = [];
-            // Para persistir imagens locais carregadas via input file, convertemos para Base64
-            const files = Array.from(fileInput);
-            let processed = 0;
-
-            files.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    photos.push({
-                        id: index + 1,
-                        url: e.target.result, // Base64 seguro para salvar no navegador
-                        name: file.name,
-                        comment: '',
-                        selected: false
-                    });
-                    processed++;
-                    if (processed === files.length) {
-                        saveData();
-                        renderGrid();
-                        const fakeLink = `${window.location.origin}${window.location.pathname}`;
-                        document.getElementById('shareableLink').value = fakeLink;
-                        document.getElementById('generatedLinkContainer').classList.remove('hidden');
-                    }
-                };
-                reader.readAsDataURL(file);
+            Array.from(fileInput).forEach((file, index) => {
+                photos.push({
+                    id: index + 1,
+                    url: URL.createObjectURL(file), // Rápido e suporta centenas de fotos pesadas
+                    name: file.name,
+                    comment: '',
+                    selected: false
+                });
             });
-        }
 
-        function saveData() {
-            localStorage.setItem('wa_photos', JSON.stringify(photos));
-            localStorage.setItem('wa_client', clientName);
+            const fakeLink = `${window.location.origin}${window.location.pathname}`;
+            document.getElementById('shareableLink').value = fakeLink;
+            document.getElementById('generatedLinkContainer').classList.remove('hidden');
+
+            renderGrid();
         }
 
         function copyShareableLink() {
@@ -321,6 +280,7 @@
 
         function openClientView() {
             document.getElementById('adminDashboard').classList.add('hidden');
+            renderGrid();
         }
 
         // Renderização do Grid
@@ -348,7 +308,6 @@
             filteredPhotos.forEach(photo => {
                 html += `
                     <div class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
-                        <!-- Camada de proteção transparente que abre o modal ao clicar na foto -->
                         <div class="protect-overlay cursor-pointer" onclick="openModal(${photo.id})"></div>
                         
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105" style="background-image: url('${photo.url}')"></div>
@@ -360,7 +319,7 @@
 
                         <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
 
-                        <!-- Botão Favorito no Card (z-index 20 para ficar acima da proteção) -->
+                        <!-- Botão Favorito no Card -->
                         <button type="button" onclick="toggleSelect(${photo.id}, event)" class="absolute top-3 right-3 z-20 w-10 h-10 rounded-full flex items-center justify-center transition ${photo.selected ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30' : 'bg-slate-950/80 border border-slate-700 text-slate-300 hover:text-white hover:border-amber-400'}">
                             ♥
                         </button>
@@ -399,7 +358,6 @@
             const photo = photos.find(p => p.id === id);
             if (photo) {
                 photo.selected = !photo.selected;
-                saveData();
                 renderGrid();
             }
         }
@@ -447,7 +405,6 @@
             const photo = photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 photo.comment = document.getElementById('modalComment').value.trim();
-                saveData();
                 alert('Comentário salvo com sucesso!');
                 renderGrid();
             }
@@ -457,7 +414,6 @@
             const photo = photos.find(p => p.id === currentModalPhotoId);
             if (photo) {
                 photo.selected = !photo.selected;
-                saveData();
                 openModal(currentModalPhotoId); 
                 renderGrid();
             }
