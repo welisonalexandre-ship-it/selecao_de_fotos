@@ -190,7 +190,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DA NUVEM IMGBB -->
+    <!-- SCRIPT COM SUPORTE A TAG DE IMAGEM IMGBB -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -235,7 +235,6 @@
         }
 
         function lockAdminPanel() {
-            document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminLoginModal').classList.remove('hidden');
         }
 
@@ -261,11 +260,11 @@
         }
 
         function saveClientsToStorage() {
-            localStorage.setItem('wa_clients_imgbb_db', JSON.stringify(clients));
+            localStorage.setItem('wa_clients_imgbb_tag_db', JSON.stringify(clients));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_imgbb_db');
+            const data = localStorage.getItem('wa_clients_imgbb_tag_db');
             if (data) {
                 try { clients = JSON.parse(data); } catch(e) { clients = []; }
             }
@@ -423,10 +422,10 @@
             filteredPhotos.forEach(photo => {
                 const heartBg = photo.selected ? 'bg-amber-400 text-slate-950 scale-110 shadow-lg shadow-amber-400/50' : 'bg-slate-950/90 border border-slate-700 text-slate-300 hover:text-white';
                 
-                // Força o preenchimento correto do fundo com o link externo
+                // Usa tag IMG real para carregar perfeitamente as fotos do ImgBB
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
-                        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat cursor-pointer" style="background-image: url('${photo.url}')" onclick="openModal(${photo.id})"></div>
+                        <img src="${photo.url}" class="absolute inset-0 w-full h-full object-cover cursor-pointer pointer-events-auto" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none">
                             <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
