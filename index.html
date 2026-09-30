@@ -112,7 +112,7 @@
         <div class="lg:col-span-1 space-y-6">
             <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl">
                 <h2 id="clientAlbumName" class="text-xl font-bold text-white mb-1">Ensaio Fotográfico</h2>
-                <p class="text-xs text-slate-400 mb-6">Selecione abaixo as suas fotos favoritas clicando no coração. Clique na imagem para ver em tela cheia e adicionar comentários.</p>
+                <p class="text-xs text-slate-400 mb-6">Clique no coração para favoritar as fotos desejadas. Clique na imagem para ver em tela cheia e comentar.</p>
                 
                 <div class="space-y-2 text-xs">
                     <button onclick="setFilter('all')" id="filterBtnAll" class="w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition">
@@ -185,58 +185,22 @@
 
     <!-- SCRIPTS DE LÓGICA E SEGURANÇA -->
     <script>
-        let photos = [];
+        let photos = []; 
         let currentFilter = 'all';
         let currentModalPhotoId = null;
         let clientName = "Maria & Eduardo";
 
-        const STORAGE_KEY = 'wa_fotografia_gallery_v2';
-
-        // Segurança / interface
+        // Segurança Anti-Print / Anti-Download
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
-            if (e.ctrlKey && ['s','p','u'].includes(e.key.toLowerCase())) {
+            if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P')) {
                 e.preventDefault();
                 alert('Ação bloqueada por motivos de direitos autorais.');
             }
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i','c'].includes(e.key.toLowerCase()))) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c'))) {
                 e.preventDefault();
             }
         });
-
-        function saveGallery() {
-            try {
-                // Fotos carregadas pelo fotógrafo são convertidas para Data URL,
-                // portanto não dependem de URL.createObjectURL() depois.
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    clientName,
-                    photos,
-                    savedAt: Date.now()
-                }));
-            } catch (err) {
-                console.warn('Não foi possível salvar a galeria:', err);
-            }
-        }
-
-        function loadGallery() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (!saved) return false;
-
-                const data = JSON.parse(saved);
-                if (!data || !Array.isArray(data.photos)) return false;
-
-                clientName = data.clientName || 'Maria & Eduardo';
-                photos = data.photos;
-                document.getElementById('clientAlbumName').innerText = `Ensaio: ${clientName}`;
-                document.getElementById('headerAlbumTitle').innerText = clientName;
-                renderGrid();
-                return true;
-            } catch (err) {
-                console.warn('Não foi possível recuperar a galeria:', err);
-                return false;
-            }
-        }
 
         function checkAdminLogin() {
             const pass = document.getElementById('adminPassword').value;
@@ -250,21 +214,12 @@
         function enterAsClientDemo() {
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
-
-            if (!loadGallery() && photos.length === 0) {
-                for (let i = 1; i <= 12; i++) {
-                    photos.push({
-                        id: i,
-                        url: `https://picsum.photos/seed/wa${i}/600/800`,
-                        name: `FOTO_${String(i).padStart(3, '0')}.jpg`,
-                        comment: '',
-                        selected: false
-                    });
+            if(photos.length === 0) {
+                for(let i=1; i<=12; i++) {
+                    photos.push({ id: i, url: `https://picsum.photos/seed/wa${i}/600/800`, name: `FOTO_${String(i).padStart(3, '0')}.jpg`, comment: '', selected: false });
                 }
-                renderGrid();
-            } else {
-                renderGrid();
             }
+            renderGrid();
         }
 
         function logoutAdmin() {
@@ -275,18 +230,7 @@
             document.getElementById('adminDashboard').classList.remove('hidden');
         }
 
-        // Converte a foto para Data URL. Isso corrige o problema de URL.createObjectURL()
-        // desaparecer quando a página/galeria é reaberta.
-        function fileToDataURL(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function generateClientGallery() {
+        function generateClientGallery() {
             const nameInput = document.getElementById('clientNameInput').value.trim();
             const fileInput = document.getElementById('clientPhotosInput').files;
 
@@ -294,221 +238,130 @@
                 alert('Por favor, digite o nome do cliente.');
                 return;
             }
-
             if (fileInput.length === 0) {
                 alert('Por favor, selecione ao menos uma foto do computador.');
                 return;
             }
 
-            const button = document.querySelector('#adminDashboard button[onclick="generateClientGallery()"]');
-            if (button) {
-                button.disabled = true;
-                button.innerText = '⏳ Preparando fotos...';
-            }
+            clientName = nameInput;
+            document.getElementById('clientAlbumName').innerText = `Ensaio: ${clientName}`;
+            document.getElementById('headerAlbumTitle').innerText = clientName;
 
-            try {
-                clientName = nameInput;
-                document.getElementById('clientAlbumName').innerText = `Ensaio: ${clientName}`;
-                document.getElementById('headerAlbumTitle').innerText = clientName;
+            photos = [];
+            Array.from(fileInput).forEach((file, index) => {
+                photos.push({
+                    id: index + 1,
+                    url: URL.createObjectURL(file),
+                    name: file.name,
+                    comment: '',
+                    selected: false
+                });
+            });
 
-                photos = [];
+            const fakeLink = `${window.location.origin}${window.location.pathname}`;
+            document.getElementById('shareableLink').value = fakeLink;
+            document.getElementById('generatedLinkContainer').classList.remove('hidden');
 
-                for (let index = 0; index < fileInput.length; index++) {
-                    const file = fileInput[index];
-                    const dataUrl = await fileToDataURL(file);
-
-                    photos.push({
-                        id: index + 1,
-                        url: dataUrl,
-                        name: file.name,
-                        comment: '',
-                        selected: false
-                    });
-                }
-
-                saveGallery();
-
-                // O link aponta para esta página. A galeria fica salva no navegador.
-                // Para enviar para outro dispositivo, será necessário um backend/armazenamento.
-                const fakeLink = `${window.location.origin}${window.location.pathname}`;
-                document.getElementById('shareableLink').value = fakeLink;
-                document.getElementById('generatedLinkContainer').classList.remove('hidden');
-
-                renderGrid();
-
-                alert('Galeria criada! A seleção de favoritos agora fica salva neste navegador.');
-            } catch (err) {
-                console.error(err);
-                alert('Não foi possível preparar uma ou mais fotos.');
-            } finally {
-                if (button) {
-                    button.disabled = false;
-                    button.innerText = '✨ Criar Galeria e Gerar Link Exclusivo';
-                }
-            }
+            renderGrid();
         }
 
         function copyShareableLink() {
             const linkBox = document.getElementById('shareableLink');
             linkBox.select();
-
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(linkBox.value)
-                    .then(() => alert('Link copiado com sucesso!'))
-                    .catch(() => fallbackCopy(linkBox));
-            } else {
-                fallbackCopy(linkBox);
-            }
-        }
-
-        function fallbackCopy(input) {
-            try {
-                document.execCommand('copy');
-                alert('Link copiado com sucesso!');
-            } catch {
-                alert('Selecione e copie o link manualmente.');
-            }
+            navigator.clipboard.writeText(linkBox.value);
+            alert('Link copiado com sucesso! Envie agora para a sua cliente no WhatsApp.');
         }
 
         function openClientView() {
             document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('adminLoginModal').classList.add('hidden');
             renderGrid();
         }
 
+        // Renderização Direta do Grid
         function renderGrid() {
             const grid = document.getElementById('photoGrid');
             const emptyState = document.getElementById('emptyState');
 
-            const filteredPhotos = photos.filter(photo => {
-                if (currentFilter === 'selected') return photo.selected === true;
-                if (currentFilter === 'unselected') return photo.selected !== true;
+            let filteredPhotos = photos.filter(p => {
+                if (currentFilter === 'selected') return p.selected;
+                if (currentFilter === 'unselected') return !p.selected;
                 return true;
             });
 
-            if (photos.length === 0 || filteredPhotos.length === 0) {
-                grid.innerHTML = '';
-
-                if (photos.length === 0) {
-                    emptyState.querySelector('h3').innerText = 'Nenhuma foto carregada neste álbum';
-                    emptyState.querySelector('p').innerText = 'Entre no painel do fotógrafo para cadastrar o cliente e carregar as fotos.';
-                } else {
-                    emptyState.querySelector('h3').innerText =
-                        currentFilter === 'selected' ? 'Nenhuma foto favoritada' : 'Nenhuma foto nesta categoria';
-                    emptyState.querySelector('p').innerText =
-                        'Clique no coração da foto para alterar sua seleção.';
-                }
-
+            if (photos.length === 0) {
                 emptyState.style.display = 'flex';
+                grid.innerHTML = '';
                 grid.appendChild(emptyState);
                 updateCounters();
                 return;
             }
 
             emptyState.style.display = 'none';
+            let html = '';
 
-            const html = filteredPhotos.map(photo => {
-                const safeName = String(photo.name)
-                    .replace(/&/g, '&amp;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-
-                return `
-                    <div class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${
-                        photo.selected
-                            ? 'border-amber-400 ring-2 ring-amber-400/40'
-                            : 'border-slate-800/80 hover:border-slate-700'
-                    } transition-all duration-200">
-
-                        <div
-                            class="absolute inset-0 bg-cover bg-center cursor-pointer transition-transform duration-300 group-hover:scale-105"
-                            style="background-image: url('${photo.url}')"
-                            onclick="openModal(${photo.id})">
-                        </div>
-
+            filteredPhotos.forEach(photo => {
+                const heartBg = photo.selected ? 'bg-amber-400 text-slate-950 scale-110 shadow-lg shadow-amber-400/50' : 'bg-slate-900/90 border border-slate-700 text-slate-300 hover:text-white';
+                
+                html += `
+                    <div class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
+                        
+                        <!-- Imagem de Fundo (Clica para abrir modal) -->
+                        <div class="absolute inset-0 bg-cover bg-center cursor-pointer" style="background-image: url('${photo.url}')" onclick="openModal(${photo.id})"></div>
+                        
+                        <!-- Marca d'Água -->
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none">
-                            <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">
-                                AMOSTRA • WA FOTOGRAFIA
-                            </span>
+                            <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
                         </div>
 
                         <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
 
-                        <!-- FAVORITO: botão recebe o clique antes da imagem -->
-                        <button
-                            type="button"
-                            aria-label="${photo.selected ? 'Remover dos favoritos' : 'Favoritar foto'}"
-                            aria-pressed="${photo.selected}"
-                            onclick="toggleSelect(${photo.id}, event)"
-                            class="absolute top-3 right-3 z-[100] w-11 h-11 rounded-full flex items-center justify-center transition shadow-lg ${
-                                photo.selected
-                                    ? 'bg-amber-400 text-slate-950 shadow-amber-400/40 scale-105'
-                                    : 'bg-slate-950/90 border border-slate-700 text-slate-300 hover:text-white hover:border-amber-400'
-                            }">
-                            <svg class="w-5 h-5 pointer-events-none" fill="${photo.selected ? 'currentColor' : 'none'}"
-                                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
+                        <!-- Botão Coração (Totalmente Isolado com onclick direto) -->
+                        <button onclick="toggleSelect(${photo.id})" class="absolute top-3 right-3 z-50 w-11 h-11 rounded-full flex items-center justify-center transition ${heartBg}">
+                            ♥
                         </button>
 
-                        ${photo.comment
-                            ? '<div class="absolute top-3 left-3 z-20 bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-md pointer-events-none">Comentada</div>'
-                            : ''}
+                        <!-- Indicador de Comentário -->
+                        ${photo.comment ? '<div class="absolute top-3 left-3 z-20 bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-md pointer-events-none">Comentada</div>' : ''}
 
+                        <!-- Nome -->
                         <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-                            <span class="text-[11px] font-medium text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/50 truncate">
-                                ${safeName}
-                            </span>
+                            <span class="text-[11px] font-medium text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/50 truncate">${photo.name}</span>
                         </div>
                     </div>
                 `;
-            }).join('');
+            });
 
             grid.innerHTML = html;
             updateCounters();
         }
 
+        // Filtros
         function setFilter(filter) {
             currentFilter = filter;
-
             ['all', 'selected', 'unselected'].forEach(f => {
-                const id = `filterBtn${f.charAt(0).toUpperCase() + f.slice(1)}`;
-                const btn = document.getElementById(id);
-                if (!btn) return;
-
+                const btn = document.getElementById(`filterBtn${f.charAt(0).toUpperCase() + f.slice(1)}`);
                 if (f === filter) {
                     btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition";
                 } else {
                     btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700 transition";
                 }
             });
-
             renderGrid();
         }
 
-        function toggleSelect(id, event) {
-            // Impede o clique do botão de chegar ao card/imagem.
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
+        // Função de Favoritar Blindada
+        function toggleSelect(id) {
+            const photo = photos.find(p => p.id === id);
+            if (photo) {
+                photo.selected = !photo.selected;
+                renderGrid();
             }
-
-            const photo = photos.find(p => Number(p.id) === Number(id));
-            if (!photo) return;
-
-            photo.selected = !photo.selected;
-
-            // Salva IMEDIATAMENTE a escolha antes de redesenhar o grid.
-            saveGallery();
-
-            renderGrid();
         }
 
+        // Contadores
         function updateCounters() {
             const total = photos.length;
-            const selected = photos.filter(p => p.selected === true).length;
+            const selected = photos.filter(p => p.selected).length;
             const unselected = total - selected;
 
             document.getElementById('selectedCountHeader').innerText = selected;
@@ -518,84 +371,71 @@
             document.getElementById('circularCount').innerText = selected;
         }
 
+        // Modal de Visualização Detalhada & Comentários
         function openModal(id) {
             currentModalPhotoId = id;
-
-            const photo = photos.find(p => Number(p.id) === Number(id));
+            const photo = photos.find(p => p.id === id);
             if (!photo) return;
 
             document.getElementById('modalImg').src = photo.url;
             document.getElementById('modalPhotoName').innerText = photo.name;
-            document.getElementById('modalComment').value = photo.comment || '';
-
-            updateModalSelectButton(photo);
-            document.getElementById('photoModal').classList.remove('hidden');
-        }
-
-        function updateModalSelectButton(photo) {
+            document.getElementById('modalComment').value = photo.comment;
+            
             const btn = document.getElementById('modalToggleSelectBtn');
-
             if (photo.selected) {
-                btn.innerText = "♥ Remover dos Favoritos";
+                btn.innerText = "Remover dos Favoritos";
                 btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs py-3 rounded-xl transition";
             } else {
                 btn.innerText = "♥ Favoritar Foto";
                 btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-amber-500/20";
             }
+
+            document.getElementById('photoModal').classList.remove('hidden');
         }
 
         function closeModal() {
             document.getElementById('photoModal').classList.add('hidden');
-            currentModalPhotoId = null;
         }
 
         function saveModalComment() {
-            const photo = photos.find(p => Number(p.id) === Number(currentModalPhotoId));
-            if (!photo) return;
-
-            photo.comment = document.getElementById('modalComment').value.trim();
-            saveGallery();
-            renderGrid();
-            updateModalSelectButton(photo);
-            alert('Comentário salvo com sucesso!');
+            const photo = photos.find(p => p.id === currentModalPhotoId);
+            if (photo) {
+                photo.comment = document.getElementById('modalComment').value.trim();
+                alert('Comentário salvo com sucesso!');
+                renderGrid();
+            }
         }
 
         function toggleSelectCurrentModal() {
-            const photo = photos.find(p => Number(p.id) === Number(currentModalPhotoId));
-            if (!photo) return;
-
-            photo.selected = !photo.selected;
-            saveGallery();
-
-            // Atualiza o botão do modal sem fechar a foto.
-            updateModalSelectButton(photo);
-            renderGrid();
+            const photo = photos.find(p => p.id === currentModalPhotoId);
+            if (photo) {
+                photo.selected = !photo.selected;
+                openModal(currentModalPhotoId); 
+                renderGrid();
+            }
         }
 
+        // Finalização e Envio ao WhatsApp
         function finalizeSelectionWhatsApp() {
-            const selectedList = photos.filter(p => p.selected === true);
-
+            const selectedList = photos.filter(p => p.selected);
             if (selectedList.length === 0) {
                 alert('Selecione ao menos uma foto antes de enviar.');
                 return;
             }
 
             let msg = `Olá! Terminei a seleção do ensaio de *${clientName}*.\n\nTotal escolhidas: *${selectedList.length} fotos*:\n\n`;
-
+            
             selectedList.forEach(p => {
                 msg += `• ${p.name}`;
-                if (p.comment) msg += ` (Obs: ${p.comment})`;
-                msg += '\n';
+                if (p.comment) {
+                    msg += ` (Obs: ${p.comment})`;
+                }
+                msg += `\n`;
             });
 
             const encoded = encodeURIComponent(msg);
             window.open(`https://wa.me/?text=${encoded}`, '_blank');
         }
-
-        // Recupera automaticamente a seleção quando a página é aberta novamente.
-        window.addEventListener('DOMContentLoaded', () => {
-            loadGallery();
-        });
     </script>
 </body>
 </html>
