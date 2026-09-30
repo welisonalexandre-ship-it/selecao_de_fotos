@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <!-- PAINEL DE GESTÃO DE CLIENTES (Nuvem) -->
+    <!-- PAINEL DE GESTÃO DE CLIENTES -->
     <div id="adminDashboard" class="fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-4 sm:p-8">
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
@@ -46,7 +46,7 @@
                     <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold flex items-center justify-center">WA</div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios via Nuvem</h1>
-                        <p class="text-xs text-slate-400">Cadastre clientes e cole os links diretos das fotos do GitHub</p>
+                        <p class="text-xs text-slate-400">Cadastre clientes e cole os links diretos do ImgBB</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
@@ -62,9 +62,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Links Diretos das Fotos (Um link por linha ou separados por vírgula)</label>
-                    <textarea id="clientPhotoLinksInput" placeholder="https://raw.githubusercontent.com/.../foto1.jpg&#10;https://raw.githubusercontent.com/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui os links "Raw" das fotos hospedadas no seu GitHub.</p>
+                    <label class="block text-xs text-slate-400 mb-1">Links Diretos das Fotos (Um link por linha)</label>
+                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui os links diretos das fotos hospedadas no ImgBB.</p>
                 </div>
 
                 <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
@@ -190,7 +190,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE NUVEM -->
+    <!-- SCRIPT DA NUVEM IMGBB -->
     <script>
         let clients = []; 
         let currentClientId = null;
@@ -235,6 +235,7 @@
         }
 
         function lockAdminPanel() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminLoginModal').classList.remove('hidden');
         }
 
@@ -260,11 +261,11 @@
         }
 
         function saveClientsToStorage() {
-            localStorage.setItem('wa_clients_cloud_db', JSON.stringify(clients));
+            localStorage.setItem('wa_clients_imgbb_db', JSON.stringify(clients));
         }
 
         function loadClientsFromStorage() {
-            const data = localStorage.getItem('wa_clients_cloud_db');
+            const data = localStorage.getItem('wa_clients_imgbb_db');
             if (data) {
                 try { clients = JSON.parse(data); } catch(e) { clients = []; }
             }
@@ -280,7 +281,6 @@
             if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
             if (!rawLinks) { alert('Cole ao menos um link de foto.'); linksInput.focus(); return; }
 
-            // Separa os links por quebra de linha ou vírgula
             const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 0);
 
             if (linkList.length === 0) {
@@ -307,7 +307,7 @@
             nameInput.value = '';
             linksInput.value = '';
             renderClientsList();
-            alert(`Cliente "${name}" cadastrado com sucesso com ${newPhotos.length} fotos da nuvem!`);
+            alert(`Cliente "${name}" cadastrado com sucesso com ${newPhotos.length} fotos!`);
         }
 
         function renderClientsList() {
@@ -423,9 +423,10 @@
             filteredPhotos.forEach(photo => {
                 const heartBg = photo.selected ? 'bg-amber-400 text-slate-950 scale-110 shadow-lg shadow-amber-400/50' : 'bg-slate-950/90 border border-slate-700 text-slate-300 hover:text-white';
                 
+                // Força o preenchimento correto do fundo com o link externo
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
-                        <div class="absolute inset-0 bg-cover bg-center cursor-pointer" style="background-image: url('${photo.url}')" onclick="openModal(${photo.id})"></div>
+                        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat cursor-pointer" style="background-image: url('${photo.url}')" onclick="openModal(${photo.id})"></div>
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none">
                             <span class="text-white font-bold text-xs uppercase tracking-widest rotate-[-30deg]">AMOSTRA • WA FOTOGRAFIA</span>
