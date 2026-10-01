@@ -26,7 +26,7 @@
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
             <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
-            <input type="password" id="adminPassword" placeholder="Senha (padrão: 1234)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
+            <input type="password" id="adminPassword" placeholder="Senha de acesso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
             <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20">
                 Acessar Painel
             </button>
@@ -47,11 +47,29 @@
                         <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-h-full max-w-full object-contain">
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold text-white">Gestão de Ensaios</h1>
-                        <p class="text-xs text-slate-400">Gere links universais, edite nomes ou remova ensaios</p>
+                        <h1 class="text-lg font-bold text-white">Gestão de Ensaios & Segurança</h1>
+                        <p class="text-xs text-slate-400">Gere links universais e altere sua senha de acesso</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
+            </div>
+
+            <!-- ALTERAR SENHA DO PAINEL -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-6 backdrop-blur-xl shadow-xl space-y-4">
+                <h2 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">🔒 Alterar Senha de Acesso ao Painel</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Nova Senha</label>
+                        <input type="password" id="newPasswordInput" placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Confirmar Nova Senha</label>
+                        <input type="password" id="confirmPasswordInput" placeholder="Repita a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+                <button onclick="updateAdminPassword()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold text-xs px-5 py-2.5 rounded-xl transition border border-amber-500/20">
+                    Salvar Nova Senha
+                </button>
             </div>
 
             <!-- Cadastro / Edição de Cliente -->
@@ -186,7 +204,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM EDIÇÃO E EXCLUSÃO -->
+    <!-- SCRIPT COM GERENCIAMENTO DE SENHA -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -211,6 +229,29 @@
 
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
+
+        function getAdminPassword() {
+            return localStorage.getItem('wa_admin_password') || '1234';
+        }
+
+        function updateAdminPassword() {
+            const newPass = document.getElementById('newPasswordInput').value.trim();
+            const confirmPass = document.getElementById('confirmPasswordInput').value.trim();
+
+            if (!newPass) {
+                alert('Digite a nova senha.');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                alert('As senhas não coincidem. Tente novamente.');
+                return;
+            }
+
+            localStorage.setItem('wa_admin_password', newPass);
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+            alert('Senha alterada com sucesso! Utilize esta nova senha nos próximos acessos.');
+        }
 
         function extractFileName(url) {
             try {
@@ -258,11 +299,12 @@
 
         function checkAdminLogin() {
             const pass = document.getElementById('adminPassword').value;
-            if (pass === '1234') {
+            const currentPass = getAdminPassword();
+            if (pass === currentPass) {
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 renderSavedLinks();
             } else {
-                alert('Senha incorreta! A senha padrão é 1234.');
+                alert('Senha incorreta!');
             }
         }
 
@@ -307,7 +349,6 @@
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             
-            // Se estiver a editar, remove a chave antiga se o nome mudou
             let cleanId = editingKey;
             if (!cleanId || !savedAlbums[cleanId]) {
                 cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
@@ -322,7 +363,6 @@
 
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
-            // Reseta o formulário
             nameInput.value = '';
             linksInput.value = '';
             editingKeyInput.value = '';
