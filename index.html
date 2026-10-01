@@ -144,15 +144,8 @@
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                    <div class="w-12 h-12 rounded-full border-4 border-amber-500 border-t-transparent animate-spin mb-4"></div>
-                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria de fotos...</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Preparando as imagens do seu ensaio. Por favor, aguarde um instante.</p>
-                    
-                    <!-- BARRA DE PROGRESSO DINÂMICA -->
-                    <div class="w-64 max-w-full bg-slate-950 border border-slate-800 rounded-full h-3 mt-5 overflow-hidden p-0.5">
-                        <div id="progressBar" class="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <span id="progressText" class="text-[11px] font-semibold text-amber-400 mt-2">0% carregado</span>
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Aguarde um instante.</p>
                 </div>
             </div>
         </div>
@@ -186,7 +179,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM BARRA DE CARREGAMENTO EM TEMPO REAL -->
+    <!-- SCRIPT DE EXIBIÇÃO INSTANTÂNEA -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -202,7 +195,7 @@
                 try {
                     const decodedUrls = JSON.parse(atob(dataParam));
                     const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
-                    preloadImagesWithProgress(albumName, decodedUrls);
+                    loadAlbumData(albumName, decodedUrls);
                     return;
                 } catch(e) {}
             }
@@ -214,7 +207,7 @@
 
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
-                    preloadImagesWithProgress(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
                     return;
                 }
             }
@@ -224,8 +217,6 @@
             } else {
                 document.getElementById('emptyTitle').innerText = "Ensaio não encontrado.";
                 document.getElementById('emptySub').innerText = "O link pode estar incompleto ou expirado.";
-                document.getElementById('progressBar').parentElement.style.display = 'none';
-                document.querySelector('.animate-spin').style.display = 'none';
             }
         };
 
@@ -243,8 +234,7 @@
             }
         }
 
-        // Sistema de pré-carregamento com barra de progresso real
-        function preloadImagesWithProgress(name, links) {
+        function loadAlbumData(name, links) {
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
             document.getElementById('adminButtonToggle').style.display = 'none';
@@ -260,33 +250,7 @@
 
             document.getElementById('clientAlbumName').innerText = `Ensaio: ${currentAlbum.name}`;
             document.getElementById('headerAlbumTitle').innerText = currentAlbum.name;
-
-            let loadedCount = 0;
-            const total = links.length;
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-
-            if (total === 0) {
-                renderGrid();
-                return;
-            }
-
-            currentAlbum.photos.forEach(photo => {
-                const img = new Image();
-                img.src = photo.url;
-                img.onload = img.onerror = function() {
-                    loadedCount++;
-                    let percent = Math.round((loadedCount / total) * 100);
-                    progressBar.style.width = percent + '%';
-                    progressText.innerText = `${percent}% carregado (${loadedCount}/${total})`;
-
-                    if (loadedCount >= total) {
-                        setTimeout(() => {
-                            renderGrid();
-                        }, 300);
-                    }
-                };
-            });
+            renderGrid();
         }
 
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -324,7 +288,7 @@
             for(let i=1; i<=12; i++) {
                 demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
             }
-            preloadImagesWithProgress("Maria & Eduardo (Demo)", demoUrls);
+            loadAlbumData("Maria & Eduardo (Demo)", demoUrls);
         }
 
         function createNewClient() {
