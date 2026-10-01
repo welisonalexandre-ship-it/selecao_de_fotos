@@ -26,13 +26,40 @@
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
             <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
+            
             <input type="password" id="adminPassword" placeholder="Senha de acesso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
-            <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20">
+            
+            <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20 mb-3">
                 Acessar Painel
             </button>
-            <div class="mt-6 border-t border-slate-800 pt-4">
+
+            <div class="flex items-center justify-between mt-2 px-1">
+                <button onclick="openRecoveryModal()" class="text-xs text-amber-400 hover:underline transition">
+                    Esqueceu a senha?
+                </button>
                 <button onclick="enterAsClientDemo()" class="text-xs text-slate-400 hover:text-amber-400 transition underline">
-                    Visualizar Ensaio Demonstração
+                    Demonstração
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE RECUPERAÇÃO DE SENHA COM E-MAIL DE SEGURANÇA -->
+    <div id="recoveryModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 relative shadow-2xl text-center">
+            <h2 class="text-base font-bold text-white mb-2">🔒 Recuperação de Senha</h2>
+            <p class="text-xs text-slate-400 mb-4">Para sua segurança, digite o e-mail administrativo autorizado para cadastrar uma nova senha.</p>
+            
+            <input type="email" id="recoveryEmailInput" placeholder="seu-email@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-3">
+            
+            <input type="password" id="recoveryNewPassInput" placeholder="Nova Senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-4">
+
+            <div class="flex gap-2">
+                <button onclick="resetPasswordWithEmail()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs py-3 rounded-xl transition">
+                    Redefinir Senha
+                </button>
+                <button onclick="closeRecoveryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-3 rounded-xl transition">
+                    Cancelar
                 </button>
             </div>
         </div>
@@ -204,11 +231,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM GERENCIAMENTO DE SENHA -->
+    <!-- SCRIPT COM SEGURANÇA E RECUPERAÇÃO DE E-MAIL -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
         let currentModalPhotoId = null;
+        const ADMIN_EMAIL = "welison.alexandre@gmail.com";
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -251,6 +279,34 @@
             document.getElementById('newPasswordInput').value = '';
             document.getElementById('confirmPasswordInput').value = '';
             alert('Senha alterada com sucesso! Utilize esta nova senha nos próximos acessos.');
+        }
+
+        function openRecoveryModal() {
+            document.getElementById('recoveryModal').classList.remove('hidden');
+        }
+
+        function closeRecoveryModal() {
+            document.getElementById('recoveryModal').classList.add('hidden');
+        }
+
+        function resetPasswordWithEmail() {
+            const emailInput = document.getElementById('recoveryEmailInput').value.trim().toLowerCase();
+            const newPass = document.getElementById('recoveryNewPassInput').value.trim();
+
+            if (emailInput !== ADMIN_EMAIL) {
+                alert('E-mail incorreto ou não autorizado!');
+                return;
+            }
+            if (!newPass) {
+                alert('Digite a nova senha.');
+                return;
+            }
+
+            localStorage.setItem('wa_admin_password', newPass);
+            alert('Senha redefinida com sucesso! Faça login com a sua nova senha.');
+            closeRecoveryModal();
+            document.getElementById('recoveryEmailInput').value = '';
+            document.getElementById('recoveryNewPassInput').value = '';
         }
 
         function extractFileName(url) {
