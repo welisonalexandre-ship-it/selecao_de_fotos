@@ -25,8 +25,8 @@
 </head>
 <body class="bg-[#0b0f17] text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
 
-    <!-- TELA DE LOGIN DO FOTÓGRAFO -->
-    <div id="adminLoginModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+    <!-- TELA DE LOGIN DO FOTÓGRAFO (Oculta por padrão para clientes) -->
+    <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
             <div class="w-20 h-16 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto mb-4 overflow-hidden p-2">
                 <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-h-full max-w-full object-contain" alt="Logo">
@@ -73,7 +73,7 @@
     </div>
 
     <!-- PAINEL DE GESTÃO DE CLIENTES -->
-    <div id="adminDashboard" class="fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-4 sm:p-8">
+    <div id="adminDashboard" class="hidden fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-4 sm:p-8">
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-3">
@@ -238,17 +238,22 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM CONTADOR E FALLBACK DE SEGURANÇA -->
+    <!-- SCRIPT DEFINITIVO DE LEITURA DIRETA -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
         let currentModalPhotoId = null;
-        const ADMIN_EMAIL = "welison.alexandre@gmail.com";
+        const ADMIN_EMAIL = "welisonalexandre@gmail.com";
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('dados');
             const nameParam = urlParams.get('nome');
+            const idParam = urlParams.get('id');
+
+            // Garante que o painel de login fica fechado por padrão ao abrir o link de cliente
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
 
             if (dataParam) {
                 try {
@@ -262,6 +267,15 @@
                 }
             }
 
+            if (idParam) {
+                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+                if (savedAlbums[idParam]) {
+                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                    return;
+                }
+            }
+
+            // Se o fotógrafo acessar a raiz do site sem parâmetros, mostra o login
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -372,6 +386,7 @@
         }
 
         function lockAdminPanel() {
+            document.getElementById('adminDashboard').classList.add('hidden');
             document.getElementById('adminLoginModal').classList.remove('hidden');
         }
 
@@ -381,6 +396,7 @@
         }
 
         function enterAsClientDemo() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
             let demoUrls = [];
             for(let i=1; i<=12; i++) {
                 demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
@@ -434,7 +450,7 @@
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link universal atualizado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
         }
 
         function editClient(key) {
@@ -537,7 +553,7 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- CONTADOR DE PROGRESSO INDIVIDUAL -->
+                        <!-- INDICADOR DE CARREGAMENTO LEVE -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
@@ -568,7 +584,6 @@
             grid.innerHTML = html;
             updateCounters();
 
-            // Inicia o contador fluido e o mecanismo de segurança para cada foto
             currentAlbum.photos.forEach(photo => {
                 startPhotoProgress(photo.id);
             });
@@ -578,7 +593,6 @@
             let currentPercent = 0;
             const percentEl = document.getElementById(`percent-${id}`);
             
-            // Incrementa o contador suavemente até 95%
             let progressInterval = setInterval(() => {
                 if (currentPercent < 95) {
                     currentPercent += Math.floor(Math.random() * 12) + 8;
@@ -589,7 +603,6 @@
 
             window['progress_' + id] = progressInterval;
 
-            // FALLBACK DE SEGURANÇA: Se em 3 segundos a imagem não disparar o onload por restrição do telemóvel, libera automaticamente
             setTimeout(() => {
                 imageLoaded(id);
             }, 3000);
