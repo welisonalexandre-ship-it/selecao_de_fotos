@@ -48,7 +48,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios</h1>
-                        <p class="text-xs text-slate-400">Gere links curtos e profissionais</p>
+                        <p class="text-xs text-slate-400">Gere links universais que funcionam em qualquer telemóvel</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
@@ -64,13 +64,13 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)</label>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB. O sistema usará o nome real dos arquivos automaticamente.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB[cite: 10]. O sistema vai gerar um link universal perfeito.</p>
                 </div>
 
                 <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                    Gerar Link Curto para o Ensaio
+                    Gerar Link Universal para o Ensaio
                 </button>
             </div>
 
@@ -176,7 +176,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT -->
+    <!-- SCRIPT UNIVERSAL ROBUSTO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -185,17 +185,20 @@
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const idParam = urlParams.get('id');
-            const legacyData = urlParams.get('dados');
+            const dataParam = urlParams.get('dados');
+            const nameParam = urlParams.get('nome');
 
-            if (legacyData) {
+            // 1. Tenta carregar do formato universal codificado (funciona em qualquer telemóvel)
+            if (dataParam) {
                 try {
-                    const decodedUrls = JSON.parse(atob(legacyData));
-                    const nameParam = urlParams.get('nome') ? decodeURIComponent(urlParams.get('nome')) : "Ensaio";
-                    loadAlbumData(nameParam, decodedUrls);
+                    const decodedUrls = JSON.parse(atob(dataParam));
+                    const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
+                    loadAlbumData(albumName, decodedUrls);
                     return;
                 } catch(e) {}
             }
 
+            // 2. Tenta carregar do formato de ID curto salvo no navegador
             if (idParam) {
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
@@ -204,12 +207,16 @@
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
                     loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
-                } else {
-                    document.getElementById('emptyTitle').innerText = "Ensaio não encontrado.";
-                    document.getElementById('emptySub').innerText = "O link pode ter expirado ou foi removido.";
+                    return;
                 }
-            } else {
+            }
+
+            // Se não tiver nenhum parâmetro válido, mostra a tela de login do fotógrafo
+            if (!dataParam && !idParam) {
                 document.getElementById('adminLoginModal').classList.remove('hidden');
+            } else {
+                document.getElementById('emptyTitle').innerText = "Ensaio não encontrado.";
+                document.getElementById('emptySub').innerText = "O link pode estar incompleto ou expirado.";
             }
         };
 
@@ -228,6 +235,10 @@
         }
 
         function loadAlbumData(name, links) {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('adminButtonToggle').style.display = 'none';
+
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
                 id: index + 1,
@@ -273,10 +284,6 @@
         }
 
         function enterAsClientDemo() {
-            document.getElementById('adminLoginModal').classList.add('hidden');
-            document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('adminButtonToggle').style.display = 'none';
-            
             let demoUrls = [];
             for(let i=1; i<=12; i++) {
                 demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
@@ -301,14 +308,18 @@
                 return;
             }
 
-            const cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
-            const shortLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}`;
+            // Cria um link universal compactado que carrega em qualquer telemóvel do mundo
+            const encodedData = btoa(JSON.stringify(linkList));
+            const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            const cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
+            
             savedAlbums[cleanId] = {
                 name: name,
                 links: linkList,
-                date: new Date().toLocaleDateString()
+                date: new Date().toLocaleDateString(),
+                universalLink: universalLink
             };
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
@@ -316,7 +327,7 @@
             linksInput.value = '';
             renderSavedLinks();
 
-            prompt("Link curto gerado com sucesso! Copie abaixo para enviar à cliente:", shortLink);
+            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
         }
 
         function renderSavedLinks() {
@@ -334,7 +345,7 @@
             let html = '';
             keys.forEach(key => {
                 let item = savedAlbums[key];
-                let link = `${window.location.origin}${window.location.pathname}?id=${key}`;
+                let linkToCopy = item.universalLink || `${window.location.origin}${window.location.pathname}?id=${key}`;
                 html += `
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
@@ -342,8 +353,8 @@
                             <p class="text-xs text-slate-400">Fotos: ${item.links.length} | Criado em: ${item.date}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="copySpecificLink('${link}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
-                            <a href="${link}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</a>
+                            <button onclick="copySpecificLink('${linkToCopy}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
+                            <a href="${linkToCopy}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</a>
                         </div>
                     </div>
                 `;
@@ -353,7 +364,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link curto copiado com sucesso! Pode enviar no WhatsApp da cliente.');
+            alert('Link universal copiado com sucesso! Pode enviar no WhatsApp da cliente.');
         }
 
         function renderGrid() {
