@@ -25,7 +25,7 @@
 </head>
 <body class="bg-[#0b0f17] text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
 
-    <!-- TELA DE LOGIN DO FOTÓGRAFO (Oculta por padrão para clientes) -->
+    <!-- TELA DE LOGIN DO FOTÓGRAFO (Oculta por padrão) -->
     <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
             <div class="w-20 h-16 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto mb-4 overflow-hidden p-2">
@@ -238,12 +238,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT DEFINITIVO DE LEITURA DIRETA -->
+    <!-- SCRIPT COM VALIDAÇÃO RIGOROSA DE CLIENTE E CONTADOR DE PORCENTAGEM -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
         let currentModalPhotoId = null;
-        const ADMIN_EMAIL = "welisonalexandre@gmail.com";
+        const ADMIN_EMAIL = "welison.alexandre@gmail.com";
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -251,7 +251,7 @@
             const nameParam = urlParams.get('nome');
             const idParam = urlParams.get('id');
 
-            // Garante que o painel de login fica fechado por padrão ao abrir o link de cliente
+            // Assegura que o painel de administração está estritamente oculto para clientes
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
@@ -275,7 +275,7 @@
                 }
             }
 
-            // Se o fotógrafo acessar a raiz do site sem parâmetros, mostra o login
+            // Apenas se NÃO houver nenhum parâmetro de cliente na URL, o painel de login do fotógrafo aparece
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -345,9 +345,11 @@
         }
 
         function loadAlbumData(name, links) {
+            // Garante ocultação total do login
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('adminButtonToggle').style.display = 'none';
+            const adminToggle = document.getElementById('adminButtonToggle');
+            if (adminToggle) adminToggle.style.display = 'none';
 
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
@@ -450,7 +452,7 @@
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+            prompt("Link universal atualizado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
         }
 
         function editClient(key) {
@@ -553,7 +555,7 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- INDICADOR DE CARREGAMENTO LEVE -->
+                        <!-- CONTADOR DE PROGRESSO DE 0 A 100% EM CADA FOTO -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
@@ -599,10 +601,11 @@
                     if (currentPercent > 95) currentPercent = 95;
                     if (percentEl) percentEl.innerText = currentPercent + '%';
                 }
-            }, 120);
+            }, 100);
 
             window['progress_' + id] = progressInterval;
 
+            // Segurança: libera o carregamento visual em até 3 segundos caso o evento nativo demore
             setTimeout(() => {
                 imageLoaded(id);
             }, 3000);
