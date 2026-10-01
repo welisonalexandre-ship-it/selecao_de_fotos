@@ -143,19 +143,25 @@
 
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                <div id="emptyState" class="col-span-full py-24 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                    <h3 id="emptyTitle" class="text-base font-medium text-slate-300">Carregando galeria...</h3>
-                    <p id="emptySub" class="text-xs text-slate-500 mt-1 max-w-sm">Aguarde um instante enquanto as fotos do seu ensaio aparecem.</p>
+                <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
+                    <div class="w-12 h-12 rounded-full border-4 border-amber-500 border-t-transparent animate-spin mb-4"></div>
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria de fotos...</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Preparando as imagens do seu ensaio. Por favor, aguarde um instante.</p>
+                    
+                    <!-- BARRA DE PROGRESSO DINÂMICA -->
+                    <div class="w-64 max-w-full bg-slate-950 border border-slate-800 rounded-full h-3 mt-5 overflow-hidden p-0.5">
+                        <div id="progressBar" class="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <span id="progressText" class="text-[11px] font-semibold text-amber-400 mt-2">0% carregado</span>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL DE ZOOM / COMENTÁRIOS AJUSTADO PARA LEIGOS E CELULAR -->
+    <!-- MODAL DE ZOOM / COMENTÁRIOS -->
     <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl my-auto">
             
-            <!-- BOTÃO FECHAR BEM VISÍVEL E DENTRO DO MODAL -->
             <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/40 transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
@@ -174,14 +180,13 @@
                 
                 <div class="space-y-2.5 mt-4">
                     <button onclick="saveModalComment()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-3 rounded-xl transition">Salvar Comentário</button>
-                    <!-- BOTÃO FAVORITAR COM DESTAQUE MÁXIMO E ALTURA SEGURA -->
                     <button id="modalToggleSelectBtn" onclick="toggleSelectCurrentModal()" class="w-full font-bold text-xs py-3.5 rounded-xl transition shadow-lg"></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT -->
+    <!-- SCRIPT COM BARRA DE CARREGAMENTO EM TEMPO REAL -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -197,7 +202,7 @@
                 try {
                     const decodedUrls = JSON.parse(atob(dataParam));
                     const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
-                    loadAlbumData(albumName, decodedUrls);
+                    preloadImagesWithProgress(albumName, decodedUrls);
                     return;
                 } catch(e) {}
             }
@@ -209,7 +214,7 @@
 
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
-                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                    preloadImagesWithProgress(savedAlbums[idParam].name, savedAlbums[idParam].links);
                     return;
                 }
             }
@@ -219,6 +224,8 @@
             } else {
                 document.getElementById('emptyTitle').innerText = "Ensaio não encontrado.";
                 document.getElementById('emptySub').innerText = "O link pode estar incompleto ou expirado.";
+                document.getElementById('progressBar').parentElement.style.display = 'none';
+                document.querySelector('.animate-spin').style.display = 'none';
             }
         };
 
@@ -236,7 +243,8 @@
             }
         }
 
-        function loadAlbumData(name, links) {
+        // Sistema de pré-carregamento com barra de progresso real
+        function preloadImagesWithProgress(name, links) {
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
             document.getElementById('adminButtonToggle').style.display = 'none';
@@ -252,7 +260,33 @@
 
             document.getElementById('clientAlbumName').innerText = `Ensaio: ${currentAlbum.name}`;
             document.getElementById('headerAlbumTitle').innerText = currentAlbum.name;
-            renderGrid();
+
+            let loadedCount = 0;
+            const total = links.length;
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            if (total === 0) {
+                renderGrid();
+                return;
+            }
+
+            currentAlbum.photos.forEach(photo => {
+                const img = new Image();
+                img.src = photo.url;
+                img.onload = img.onerror = function() {
+                    loadedCount++;
+                    let percent = Math.round((loadedCount / total) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressText.innerText = `${percent}% carregado (${loadedCount}/${total})`;
+
+                    if (loadedCount >= total) {
+                        setTimeout(() => {
+                            renderGrid();
+                        }, 300);
+                    }
+                };
+            });
         }
 
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -290,7 +324,7 @@
             for(let i=1; i<=12; i++) {
                 demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
             }
-            loadAlbumData("Maria & Eduardo (Demo)", demoUrls);
+            preloadImagesWithProgress("Maria & Eduardo (Demo)", demoUrls);
         }
 
         function createNewClient() {
