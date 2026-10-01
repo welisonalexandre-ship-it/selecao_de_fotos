@@ -34,7 +34,7 @@
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
             <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
             
-            <input type="password" id="adminPassword" placeholder="Senha de acesso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
+            <input type="password" id="adminPassword" autocapitalize="none" autocomplete="off" autocorrect="off" placeholder="Senha de acesso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
             
             <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20 mb-3">
                 Acessar Painel
@@ -57,9 +57,9 @@
             <h2 class="text-base font-bold text-white mb-2">🔒 Recuperação de Senha</h2>
             <p class="text-xs text-slate-400 mb-4">Para sua segurança, digite o e-mail administrativo autorizado para cadastrar uma nova senha.</p>
             
-            <input type="email" id="recoveryEmailInput" placeholder="seu-email@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-3">
+            <input type="email" id="recoveryEmailInput" autocapitalize="none" placeholder="seu-email@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-3">
             
-            <input type="password" id="recoveryNewPassInput" placeholder="Nova Senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-4">
+            <input type="password" id="recoveryNewPassInput" autocapitalize="none" placeholder="Nova Senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-4">
 
             <div class="flex gap-2">
                 <button onclick="resetPasswordWithEmail()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs py-3 rounded-xl transition">
@@ -94,11 +94,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Nova Senha</label>
-                        <input type="password" id="newPasswordInput" placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                        <input type="password" id="newPasswordInput" autocapitalize="none" placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Confirmar Nova Senha</label>
-                        <input type="password" id="confirmPasswordInput" placeholder="Repita a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                        <input type="password" id="confirmPasswordInput" autocapitalize="none" placeholder="Repita a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
                     </div>
                 </div>
                 <button onclick="updateAdminPassword()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold text-xs px-5 py-2.5 rounded-xl transition border border-amber-500/20">
@@ -118,9 +118,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB[cite: 10].</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB.</p>
                 </div>
 
                 <div class="flex gap-3">
@@ -238,7 +238,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO -->
+    <!-- SCRIPT COM VALIDAÇÃO BLINDADA DE SENHA -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -251,11 +251,9 @@
             const nameParam = urlParams.get('nome');
             const idParam = urlParams.get('id');
 
-            // Garante que o painel de clientes e o login começam fechados
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // Se o link tiver dados de ensaio, carrega direto para a cliente
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -271,12 +269,12 @@
             if (idParam) {
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
-                    loadAlbumData(savedAlbums[id_param].name, savedAlbums[id_param].links);
+                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
                     return;
                 }
             }
 
-            // Se NÃO houver parâmetros de ensaio na URL, abre diretamente a tela de login do fotógrafo
+            // Exibe o login apenas se estiver na página raiz sem parâmetros
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -375,13 +373,16 @@
         });
 
         function checkAdminLogin() {
-            const pass = document.getElementById('adminPassword').value;
-            const currentPass = getAdminPassword();
+            // Remove espaços e garante compatibilidade exata com o telemóvel
+            const pass = document.getElementById('adminPassword').value.trim();
+            const currentPass = getAdminPassword().trim();
+
             if (pass === currentPass) {
+                document.getElementById('adminPassword').value = '';
                 document.getElementById('adminLoginModal').classList.add('hidden');
-                openAdminDashboard(); // CORREÇÃO: Abre direto o painel de gestão ao logar
+                openAdminDashboard();
             } else {
-                alert('Senha incorreta!');
+                alert('Senha incorreta! Se esqueceu, use a opção "Esqueceu a senha?".');
             }
         }
 
@@ -450,7 +451,7 @@
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link universal atualizado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
         }
 
         function editClient(key) {
@@ -696,7 +697,7 @@
                 btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20";
             }
 
-            document.getElementById('photoModal').classList.remove('hidden');
+            document.getElementById('photoModal').classList.add('hidden');
         }
 
         function closeModal() {
