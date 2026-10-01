@@ -203,8 +203,8 @@
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                    <h3 id="emptyTitle" class="text-base font-bold text-white">Nenhum ensaio carregado</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Abra o painel de clientes ou acesse através de um link de ensaio válido.</p>
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Por favor, aguarde um instante.</p>
                 </div>
             </div>
         </div>
@@ -238,12 +238,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM VALIDAÇÃO BLINDADA DE SENHA -->
+    <!-- SCRIPT COM LEITURA DIRETA E FORÇADA DO ÁLBUM -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
         let currentModalPhotoId = null;
-        const ADMIN_EMAIL = "welison.alexandre@gmail.com";
+        const ADMIN_EMAIL = "welisonalexandre@gmail.com";
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -251,9 +251,11 @@
             const nameParam = urlParams.get('nome');
             const idParam = urlParams.get('id');
 
+            // Oculta tudo por padrão
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
+            // 1. Se o link tiver os dados embutidos (método universal), carrega direto o álbum da cliente
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -266,6 +268,7 @@
                 }
             }
 
+            // 2. Se tiver ID, busca nos salvos do navegador
             if (idParam) {
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
@@ -274,7 +277,7 @@
                 }
             }
 
-            // Exibe o login apenas se estiver na página raiz sem parâmetros
+            // 3. Se NÃO houver nenhum parâmetro de cliente na URL, exibe estritamente o login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -344,8 +347,11 @@
         }
 
         function loadAlbumData(name, links) {
+            // Garante ocultação total e irrevogável do painel de login para a cliente
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
+            const adminButton = document.getElementById('adminButtonToggle');
+            if (adminButton) adminButton.style.display = 'none';
 
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
@@ -373,7 +379,6 @@
         });
 
         function checkAdminLogin() {
-            // Remove espaços e garante compatibilidade exata com o telemóvel
             const pass = document.getElementById('adminPassword').value.trim();
             const currentPass = getAdminPassword().trim();
 
@@ -425,6 +430,7 @@
             }
 
             const encodedData = btoa(JSON.stringify(linkList));
+            // Garante que o link gerado contenha todos os dados embutidos para abrir direto na galeria da cliente
             const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
@@ -697,7 +703,7 @@
                 btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20";
             }
 
-            document.getElementById('photoModal').classList.add('hidden');
+            document.getElementById('photoModal').classList.remove('hidden');
         }
 
         function closeModal() {
