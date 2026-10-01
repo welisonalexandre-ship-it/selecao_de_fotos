@@ -48,16 +48,18 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios</h1>
-                        <p class="text-xs text-slate-400">Gere links universais que funcionam em qualquer telemóvel</p>
+                        <p class="text-xs text-slate-400">Gere links universais, edite nomes ou remova ensaios</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
             </div>
 
-            <!-- Cadastro de Novo Cliente -->
+            <!-- Cadastro / Edição de Cliente -->
             <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-8 backdrop-blur-xl shadow-xl space-y-4">
-                <h2 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">➕ Cadastrar Novo Cliente / Ensaio</h2>
+                <h2 id="formTitle" class="text-sm font-semibold text-amber-400 uppercase tracking-wider">➕ Cadastrar Novo Cliente / Ensaio</h2>
                 
+                <input type="hidden" id="editingClientKey" value="">
+
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nome do Cliente</label>
                     <input type="text" id="clientNameInput" placeholder="Ex: Maria Eduarda" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
@@ -66,12 +68,17 @@
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB[cite: 10]. O sistema vai gerar um link universal perfeito.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB[cite: 10].</p>
                 </div>
 
-                <button onclick="createNewClient()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                    Gerar Link Universal para o Ensaio
-                </button>
+                <div class="flex gap-3">
+                    <button id="saveButton" onclick="createNewClient()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
+                        Gerar Link Universal para o Ensaio
+                    </button>
+                    <button id="cancelEditButton" onclick="cancelEdit()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-3 rounded-xl transition text-sm">
+                        Cancelar
+                    </button>
+                </div>
             </div>
 
             <!-- Lista de Clientes -->
@@ -145,7 +152,7 @@
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
                     <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Aguarde um instante.</p>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Por favor, aguarde um instante.</p>
                 </div>
             </div>
         </div>
@@ -179,7 +186,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE EXIBIÇÃO INSTANTÂNEA -->
+    <!-- SCRIPT COM EDIÇÃO E EXCLUSÃO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -187,37 +194,22 @@
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const idParam = urlParams.get('id');
             const dataParam = urlParams.get('dados');
             const nameParam = urlParams.get('nome');
 
             if (dataParam) {
                 try {
-                    const decodedUrls = JSON.parse(atob(dataParam));
+                    let decodedJson = atob(dataParam);
+                    let decodedUrls = JSON.parse(decodedJson);
                     const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
                     loadAlbumData(albumName, decodedUrls);
                     return;
-                } catch(e) {}
-            }
-
-            if (idParam) {
-                document.getElementById('adminLoginModal').classList.add('hidden');
-                document.getElementById('adminDashboard').classList.add('hidden');
-                document.getElementById('adminButtonToggle').style.display = 'none';
-
-                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-                if (savedAlbums[idParam]) {
-                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
-                    return;
+                } catch(e) {
+                    console.error("Erro ao descodificar dados:", e);
                 }
             }
 
-            if (!dataParam && !idParam) {
-                document.getElementById('adminLoginModal').classList.remove('hidden');
-            } else {
-                document.getElementById('emptyTitle').innerText = "Ensaio não encontrado.";
-                document.getElementById('emptySub').innerText = "O link pode estar incompleto ou expirado.";
-            }
+            document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
         function extractFileName(url) {
@@ -242,7 +234,7 @@
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
                 id: index + 1,
-                url: url,
+                url: url.trim(),
                 name: extractFileName(url),
                 comment: '',
                 selected: false
@@ -294,14 +286,16 @@
         function createNewClient() {
             const nameInput = document.getElementById('clientNameInput');
             const linksInput = document.getElementById('clientPhotoLinksInput');
+            const editingKeyInput = document.getElementById('editingClientKey');
 
             const name = nameInput.value.trim();
             const rawLinks = linksInput.value.trim();
+            const editingKey = editingKeyInput.value;
 
             if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
             if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
 
-            const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 0);
+            const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 5);
 
             if (linkList.length === 0) {
                 alert('Nenhuma ligação válida encontrada.');
@@ -312,21 +306,66 @@
             const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-            const cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
             
+            // Se estiver a editar, remove a chave antiga se o nome mudou
+            let cleanId = editingKey;
+            if (!cleanId || !savedAlbums[cleanId]) {
+                cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
+            }
+
             savedAlbums[cleanId] = {
                 name: name,
                 links: linkList,
                 date: new Date().toLocaleDateString(),
                 universalLink: universalLink
             };
+
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
+            // Reseta o formulário
             nameInput.value = '';
             linksInput.value = '';
-            renderSavedLinks();
+            editingKeyInput.value = '';
+            document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
+            document.getElementById('cancelEditButton').classList.add('hidden');
 
-            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+            renderSavedLinks();
+            prompt("Link universal atualizado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+        }
+
+        function editClient(key) {
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            if (savedAlbums[key]) {
+                let item = savedAlbums[key];
+                document.getElementById('clientNameInput').value = item.name;
+                document.getElementById('clientPhotoLinksInput').value = item.links.join('\n');
+                document.getElementById('editingClientKey').value = key;
+
+                document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
+                document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
+                document.getElementById('cancelEditButton').classList.remove('hidden');
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEdit() {
+            document.getElementById('clientNameInput').value = '';
+            document.getElementById('clientPhotoLinksInput').value = '';
+            document.getElementById('editingClientKey').value = '';
+            document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
+            document.getElementById('cancelEditButton').classList.add('hidden');
+        }
+
+        function deleteClient(key) {
+            if (confirm("Tem certeza que deseja excluir este ensaio?")) {
+                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+                delete savedAlbums[key];
+                localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
+                renderSavedLinks();
+            }
         }
 
         function renderSavedLinks() {
@@ -344,16 +383,18 @@
             let html = '';
             keys.forEach(key => {
                 let item = savedAlbums[key];
-                let linkToCopy = item.universalLink || `${window.location.origin}${window.location.pathname}?id=${key}`;
+                let linkToCopy = item.universalLink;
                 html += `
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
                             <h3 class="font-bold text-sm text-white">${item.name}</h3>
                             <p class="text-xs text-slate-400">Fotos: ${item.links.length} | Criado em: ${item.date}</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <button onclick="copySpecificLink('${linkToCopy}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
-                            <a href="${linkToCopy}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir Galeria</a>
+                            <button onclick="editClient('${key}')" class="bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 text-xs px-3 py-2 rounded-xl transition">Editar</button>
+                            <button onclick="deleteClient('${key}')" class="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs px-3 py-2 rounded-xl transition">Excluir</button>
+                            <a href="${linkToCopy}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir</a>
                         </div>
                     </div>
                 `;
