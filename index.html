@@ -151,10 +151,12 @@
         </div>
     </main>
 
-    <!-- MODAL DE ZOOM / COMENTÁRIOS -->
-    <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl mt-8">
-            <button onclick="closeModal()" class="absolute -top-6 right-2 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-12 h-12 rounded-full flex items-center justify-center shadow-2xl shadow-amber-500/50 transition text-lg border-2 border-slate-950">✕</button>
+    <!-- MODAL DE ZOOM / COMENTÁRIOS AJUSTADO PARA LEIGOS E CELULAR -->
+    <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl my-auto">
+            
+            <!-- BOTÃO FECHAR BEM VISÍVEL E DENTRO DO MODAL -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/40 transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
                 <img id="modalImg" src="" class="max-h-full max-w-full object-contain pointer-events-none select-none">
@@ -162,21 +164,24 @@
                     <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[60%] object-contain opacity-60">
                 </div>
             </div>
-            <div class="w-full md:w-72 flex flex-col justify-between">
+            
+            <div class="w-full md:w-72 flex flex-col justify-between pb-2">
                 <div>
-                    <h3 id="modalPhotoName" class="text-sm font-bold text-white mb-2">FOTO_001.JPG</h3>
-                    <p class="text-xs text-slate-400 mb-4">Deseja adicionar algum ajuste ou comentário específico para esta foto?</p>
-                    <textarea id="modalComment" placeholder="Ex: Ajustar brilho, retocar fundo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-28 resize-none"></textarea>
+                    <h3 id="modalPhotoName" class="text-sm font-bold text-white mb-1 pr-12 truncate">FOTO_001.JPG</h3>
+                    <p class="text-xs text-slate-400 mb-3">Deseja adicionar algum ajuste ou comentário específico para esta foto?</p>
+                    <textarea id="modalComment" placeholder="Ex: Ajustar brilho, retocar fundo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-24 resize-none"></textarea>
                 </div>
-                <div class="space-y-3 mt-4">
-                    <button onclick="saveModalComment()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 rounded-xl transition">Salvar Comentário</button>
-                    <button id="modalToggleSelectBtn" onclick="toggleSelectCurrentModal()" class="w-full font-bold text-xs py-3 rounded-xl transition shadow-lg">Favoritar Foto</button>
+                
+                <div class="space-y-2.5 mt-4">
+                    <button onclick="saveModalComment()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-3 rounded-xl transition">Salvar Comentário</button>
+                    <!-- BOTÃO FAVORITAR COM DESTAQUE MÁXIMO E ALTURA SEGURA -->
+                    <button id="modalToggleSelectBtn" onclick="toggleSelectCurrentModal()" class="w-full font-bold text-xs py-3.5 rounded-xl transition shadow-lg"></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT UNIVERSAL ROBUSTO -->
+    <!-- SCRIPT -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -188,7 +193,6 @@
             const dataParam = urlParams.get('dados');
             const nameParam = urlParams.get('nome');
 
-            // 1. Tenta carregar do formato universal codificado (funciona em qualquer telemóvel)
             if (dataParam) {
                 try {
                     const decodedUrls = JSON.parse(atob(dataParam));
@@ -198,7 +202,6 @@
                 } catch(e) {}
             }
 
-            // 2. Tenta carregar do formato de ID curto salvo no navegador
             if (idParam) {
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
@@ -211,7 +214,6 @@
                 }
             }
 
-            // Se não tiver nenhum parâmetro válido, mostra a tela de login do fotógrafo
             if (!dataParam && !idParam) {
                 document.getElementById('adminLoginModal').classList.remove('hidden');
             } else {
@@ -308,7 +310,6 @@
                 return;
             }
 
-            // Cria um link universal compactado que carrega em qualquer telemóvel do mundo
             const encodedData = btoa(JSON.stringify(linkList));
             const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
@@ -478,11 +479,11 @@
             
             const btn = document.getElementById('modalToggleSelectBtn');
             if (photo.selected) {
-                btn.innerText = "Remover dos Favoritos";
-                btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs py-3 rounded-xl transition";
+                btn.innerText = "✓ Remover dos Favoritos";
+                btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs py-3.5 rounded-xl transition border border-amber-500/30";
             } else {
                 btn.innerText = "♥ Favoritar Foto";
-                btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-amber-500/20";
+                btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20";
             }
 
             document.getElementById('photoModal').classList.remove('hidden');
