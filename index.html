@@ -19,7 +19,7 @@
             to { opacity: 1; }
         }
         .fade-in {
-            animation: fadeIn 0.3s ease-in-out forwards;
+            animation: fadeIn 0.4s ease-in-out forwards;
         }
     </style>
 </head>
@@ -238,7 +238,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM CARREGAMENTO RÁPIDO E SEGURO -->
+    <!-- SCRIPT COM CONTADOR E FALLBACK DE SEGURANÇA -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -537,13 +537,14 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- INDICADOR DE CARREGAMENTO LEVE -->
-                        <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/80 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-300">
-                            <div class="w-6 h-6 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div>
+                        <!-- CONTADOR DE PROGRESSO INDIVIDUAL -->
+                        <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
+                            <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
+                            <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
                         </div>
 
                         <!-- IMAGEM COM REVELAÇÃO SUAVE -->
-                        <img id="img-${photo.id}" src="${photo.url}" onload="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
+                        <img id="img-${photo.id}" src="${photo.url}" onload="imageLoaded(${photo.id})" onerror="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
                             <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[50%] object-contain opacity-50">
@@ -566,16 +567,50 @@
 
             grid.innerHTML = html;
             updateCounters();
+
+            // Inicia o contador fluido e o mecanismo de segurança para cada foto
+            currentAlbum.photos.forEach(photo => {
+                startPhotoProgress(photo.id);
+            });
+        }
+
+        function startPhotoProgress(id) {
+            let currentPercent = 0;
+            const percentEl = document.getElementById(`percent-${id}`);
+            
+            // Incrementa o contador suavemente até 95%
+            let progressInterval = setInterval(() => {
+                if (currentPercent < 95) {
+                    currentPercent += Math.floor(Math.random() * 12) + 8;
+                    if (currentPercent > 95) currentPercent = 95;
+                    if (percentEl) percentEl.innerText = currentPercent + '%';
+                }
+            }, 120);
+
+            window['progress_' + id] = progressInterval;
+
+            // FALLBACK DE SEGURANÇA: Se em 3 segundos a imagem não disparar o onload por restrição do telemóvel, libera automaticamente
+            setTimeout(() => {
+                imageLoaded(id);
+            }, 3000);
         }
 
         function imageLoaded(id) {
+            if (window['progress_' + id]) {
+                clearInterval(window['progress_' + id]);
+            }
+
+            const percentEl = document.getElementById(`percent-${id}`);
             const loaderEl = document.getElementById(`loader-${id}`);
             const imgEl = document.getElementById(`img-${id}`);
+
+            if (percentEl) percentEl.innerText = '100%';
 
             if (loaderEl) {
                 loaderEl.style.opacity = '0';
                 setTimeout(() => { loaderEl.style.display = 'none'; }, 300);
             }
+
             if (imgEl) {
                 imgEl.style.opacity = '1';
             }
