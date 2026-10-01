@@ -85,7 +85,7 @@
                         <p class="text-xs text-slate-400">Gere links universais e altere sua senha de acesso</p>
                     </div>
                 </div>
-                <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Bloquear Painel</button>
+                <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 transition">Sair / Bloquear</button>
             </div>
 
             <!-- ALTERAR SENHA DO PAINEL -->
@@ -203,8 +203,8 @@
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Por favor, aguarde um instante.</p>
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Nenhum ensaio carregado</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Abra o painel de clientes ou acesse através de um link de ensaio válido.</p>
                 </div>
             </div>
         </div>
@@ -238,7 +238,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM VALIDAÇÃO RIGOROSA DE CLIENTE E CONTADOR DE PORCENTAGEM -->
+    <!-- SCRIPT CORRIGIDO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -251,10 +251,11 @@
             const nameParam = urlParams.get('nome');
             const idParam = urlParams.get('id');
 
-            // Assegura que o painel de administração está estritamente oculto para clientes
+            // Garante que o painel de clientes e o login começam fechados
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
+            // Se o link tiver dados de ensaio, carrega direto para a cliente
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -270,12 +271,12 @@
             if (idParam) {
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
-                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                    loadAlbumData(savedAlbums[id_param].name, savedAlbums[id_param].links);
                     return;
                 }
             }
 
-            // Apenas se NÃO houver nenhum parâmetro de cliente na URL, o painel de login do fotógrafo aparece
+            // Se NÃO houver parâmetros de ensaio na URL, abre diretamente a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -345,11 +346,8 @@
         }
 
         function loadAlbumData(name, links) {
-            // Garante ocultação total do login
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
-            const adminToggle = document.getElementById('adminButtonToggle');
-            if (adminToggle) adminToggle.style.display = 'none';
 
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
@@ -381,7 +379,7 @@
             const currentPass = getAdminPassword();
             if (pass === currentPass) {
                 document.getElementById('adminLoginModal').classList.add('hidden');
-                renderSavedLinks();
+                openAdminDashboard(); // CORREÇÃO: Abre direto o painel de gestão ao logar
             } else {
                 alert('Senha incorreta!');
             }
@@ -605,7 +603,6 @@
 
             window['progress_' + id] = progressInterval;
 
-            // Segurança: libera o carregamento visual em até 3 segundos caso o evento nativo demore
             setTimeout(() => {
                 imageLoaded(id);
             }, 3000);
