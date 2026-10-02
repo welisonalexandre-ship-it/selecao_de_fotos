@@ -123,7 +123,6 @@
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-xl text-slate-300 transition">Sair / Bloquear</button>
             </div>
 
-            <!-- OPÇÕES DE SINCRONIZAÇÃO ENTRE APARELHOS -->
             <div class="flex flex-wrap gap-3 mb-6">
                 <button onclick="togglePasswordSection()" class="text-xs text-amber-400 hover:text-amber-300 transition bg-slate-900/60 border border-amber-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
                     <span>⚙️ Alterar Senha de Acesso</span>
@@ -172,7 +171,7 @@
 
                 <div class="flex gap-3">
                     <button id="saveButton" onclick="createNewClient()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                        Gerar Link Universal para o Ensaio
+                        Gerar Link Curto e Universal para o Ensaio
                     </button>
                     <button id="cancelEditButton" onclick="cancelEdit()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-3 rounded-xl transition text-sm">
                         Cancelar
@@ -282,7 +281,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT COM SUPORTE A BACKUP E SINCRONIZAÇÃO -->
+    <!-- SCRIPT DE GESTÃO DE LINKS CURTOS -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -291,40 +290,22 @@
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const dataParam = urlParams.get('dados');
-            const nameParam = urlParams.get('nome');
             const idParam = urlParams.get('id');
 
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            if (dataParam) {
-                try {
-                    let decodedJson = atob(dataParam);
-                    let decodedUrls = JSON.parse(decodedJson);
-                    const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
-                    
-                    const adminBtn = document.getElementById('adminButtonToggle');
-                    if (adminBtn) adminBtn.classList.add('hidden');
+            // Carrega os álbuns salvos localmente
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
 
-                    loadAlbumData(albumName, decodedUrls);
-                    return;
-                } catch(e) {
-                    console.error("Erro ao descodificar dados:", e);
-                }
+            if (idParam && savedAlbums[idParam]) {
+                const adminBtn = document.getElementById('adminButtonToggle');
+                if (adminBtn) adminBtn.classList.add('hidden');
+                loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                return;
             }
 
-            if (idParam) {
-                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-                if (savedAlbums[idParam]) {
-                    const adminBtn = document.getElementById('adminButtonToggle');
-                    if (adminBtn) adminBtn.classList.add('hidden');
-
-                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
-                    return;
-                }
-            }
-
+            // Se abrir sem ID, exibe o painel de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -351,7 +332,6 @@
             alert('Senha alterada com sucesso!');
         }
 
-        // FUNÇÕES DE EXPORTAR E IMPORTAR DADOS ENTRE COMPUTADOR E TELEMÓVEL
         function exportDataBackup() {
             let data = localStorage.getItem('wa_short_albums') || '{}';
             let blob = new Blob([data], { type: "application/json" });
@@ -470,22 +450,21 @@
             const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
             if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
 
-            const encodedData = btoa(JSON.stringify(linkList));
-            const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
-
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             let cleanId = editingKey || (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100));
+
+            const universalLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}`;
 
             savedAlbums[cleanId] = { name: name, links: linkList, date: new Date().toLocaleDateString(), universalLink: universalLink };
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
             nameInput.value = ''; linksInput.value = ''; editingKeyInput.value = '';
             document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
-            document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Curto e Universal para o Ensaio";
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link gerado com sucesso! Copie abaixo:", universalLink);
+            prompt("Link curto gerado com sucesso! Copie abaixo:", universalLink);
         }
 
         function editClient(key) {
@@ -495,7 +474,7 @@
                 document.getElementById('clientNameInput').value = item.name;
                 document.getElementById('clientPhotoLinksInput').value = item.links.join('\n');
                 document.getElementById('editingClientKey').value = key;
-                document.getElementById('formTitle').innerText = `✏️️ Editando Ensaio de: ${item.name}`;
+                document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
                 document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
                 document.getElementById('cancelEditButton').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -507,7 +486,7 @@
             document.getElementById('clientPhotoLinksInput').value = '';
             document.getElementById('editingClientKey').value = '';
             document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
-            document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Curto e Universal para o Ensaio";
             document.getElementById('cancelEditButton').classList.add('hidden');
         }
 
@@ -555,7 +534,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link universal copiado com sucesso!');
+            alert('Link curto copiado com sucesso!');
         }
 
         function renderGrid() {
