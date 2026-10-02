@@ -21,7 +21,6 @@
         .fade-in {
             animation: fadeIn 0.3s ease-in-out forwards;
         }
-        /* Efeito de brilho dourado metálico idêntico à referência */
         .gold-border {
             border: 1px solid rgba(212, 175, 55, 0.35);
             box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(212, 175, 55, 0.05);
@@ -37,30 +36,25 @@
 </head>
 <body class="bg-[#05080e] text-slate-100 min-h-screen flex flex-col antialiased relative overflow-x-hidden" oncontextmenu="return false;">
 
-    <!-- TELA DE LOGIN DO FOTÓGRAFO (Com visual idêntico à referência) -->
+    <!-- TELA DE LOGIN DO FOTÓGRAFO -->
     <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-[#04060a] flex items-center justify-center p-4">
         
-        <!-- Fundo fotográfico simulando estúdio com a câmera à direita e logotipo esmaecido à esquerda -->
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
-            <!-- Câmera profissional difusa à direita (simulando a foto) -->
             <div class="absolute -right-20 -bottom-20 w-[600px] h-[600px] bg-[radial-gradient(circle,_rgba(30,41,59,0.5)_0%,_transparent_70%)] rounded-full blur-2xl"></div>
             <div class="absolute right-0 top-1/2 -translate-y-1/2 w-[450px] h-[450px] opacity-25 bg-cover bg-no-repeat bg-center" style="background-image: url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop'); filter: brightness(0.6) contrast(1.2);"></div>
             
-            <!-- Logotipo grande esmaecido no canto esquerdo da tela como marca d'água de fundo -->
             <div class="absolute left-10 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
                 <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="w-[450px] object-contain">
                 <p class="text-amber-400/60 uppercase tracking-[0.3em] text-sm mt-4 font-light text-center">Registrando o que importa</p>
             </div>
         </div>
 
-        <!-- Caixa Central Luxuosa -->
         <div class="relative gold-border bg-[#070b14]/90 p-8 sm:p-10 rounded-[2rem] max-w-md w-full text-center backdrop-blur-2xl z-10">
             
             <div class="flex items-center justify-center mx-auto mb-4">
                 <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-24 w-auto object-contain filter drop-shadow-[0_2px_10px_rgba(245,158,11,0.2)]" alt="Logo">
             </div>
 
-            <!-- Ícone de câmara centralizado -->
             <div class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-3">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
             </div>
@@ -68,7 +62,6 @@
             <h2 class="text-lg font-bold text-white tracking-wide mb-1">Painel Restrito do Fotógrafo</h2>
             <p class="text-[11px] text-slate-400 mb-6 font-light">Digite sua senha de acesso para gerenciar seus ensaios.</p>
             
-            <!-- Campo de senha com ícone de chave/cadeado -->
             <div class="relative mb-4">
                 <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -130,10 +123,18 @@
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-xl text-slate-300 transition">Sair / Bloquear</button>
             </div>
 
-            <div class="mb-6">
+            <!-- OPÇÕES DE SINCRONIZAÇÃO ENTRE APARELHOS -->
+            <div class="flex flex-wrap gap-3 mb-6">
                 <button onclick="togglePasswordSection()" class="text-xs text-amber-400 hover:text-amber-300 transition bg-slate-900/60 border border-amber-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
-                    <span>⚙️ Alterar Senha de Acesso ao Painel</span>
+                    <span>⚙️ Alterar Senha de Acesso</span>
                 </button>
+                <button onclick="exportDataBackup()" class="text-xs text-emerald-400 hover:text-emerald-300 transition bg-slate-900/60 border border-emerald-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
+                    <span>💾 Exportar Ensaios (Backup)</span>
+                </button>
+                <label class="text-xs text-sky-400 hover:text-sky-300 transition bg-slate-900/60 border border-sky-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2 cursor-pointer">
+                    <span>📂 Importar Ensaios (Sincronizar)</span>
+                    <input type="file" id="importFile" accept=".json" onchange="importDataBackup(event)" class="hidden">
+                </label>
             </div>
 
             <div id="passwordSection" class="hidden bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-6 backdrop-blur-xl shadow-xl space-y-4">
@@ -262,7 +263,7 @@
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
                 <img id="modalImg" src="" loading="lazy" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain pointer-events-none select-none">
                 <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none p-4">
-                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[60%] object-contain opacity-60">
+                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="max-w-[60%] object-contain opacity-60">
                 </div>
             </div>
             
@@ -281,7 +282,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE FUNCIONAMENTO -->
+    <!-- SCRIPT COM SUPORTE A BACKUP E SINCRONIZAÇÃO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -348,6 +349,36 @@
             document.getElementById('confirmPasswordInput').value = '';
             document.getElementById('passwordSection').classList.add('hidden');
             alert('Senha alterada com sucesso!');
+        }
+
+        // FUNÇÕES DE EXPORTAR E IMPORTAR DADOS ENTRE COMPUTADOR E TELEMÓVEL
+        function exportDataBackup() {
+            let data = localStorage.getItem('wa_short_albums') || '{}';
+            let blob = new Blob([data], { type: "application/json" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = "backup_ensaios_wa.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function importDataBackup(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let importedAlbums = JSON.parse(e.target.result);
+                    localStorage.setItem('wa_short_albums', JSON.stringify(importedAlbums));
+                    renderSavedLinks();
+                    alert('Ensaios sincronizados com sucesso!');
+                } catch (err) {
+                    alert('Erro ao ler o arquivo de backup.');
+                }
+            };
+            reader.readAsText(file);
         }
 
         function openRecoveryModal() { document.getElementById('recoveryModal').classList.remove('hidden'); }
@@ -464,7 +495,7 @@
                 document.getElementById('clientNameInput').value = item.name;
                 document.getElementById('clientPhotoLinksInput').value = item.links.join('\n');
                 document.getElementById('editingClientKey').value = key;
-                document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
+                document.getElementById('formTitle').innerText = `✏️️ Editando Ensaio de: ${item.name}`;
                 document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
                 document.getElementById('cancelEditButton').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
