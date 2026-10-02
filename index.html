@@ -216,7 +216,7 @@
             <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/40 transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img id="modalImg" src="" class="max-h-full max-w-full object-contain pointer-events-none select-none">
+                <img id="modalImg" src="" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain pointer-events-none select-none">
                 <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none p-4">
                     <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[60%] object-contain opacity-60">
                 </div>
@@ -237,7 +237,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT BLINDADO PARA IMGBB E MÓVEIS -->
+    <!-- SCRIPT BLINDADO DE CARREGAMENTO IMGBB -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -253,6 +253,7 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
+            // 1. Tenta carregar os dados diretamente da URL (com codificação segura)
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -265,21 +266,31 @@
                     loadAlbumData(albumName, decodedUrls);
                     return;
                 } catch(e) {
-                    console.error("Erro ao descodificar dados:", e);
+                    console.error("Erro ao descodificar dados da URL, tentando armazenamento local:", e);
                 }
             }
 
-            if (idParam) {
-                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-                if (savedAlbums[idParam]) {
-                    const adminBtn = document.getElementById('adminButtonToggle');
-                    if (adminBtn) adminBtn.classList.add('hidden');
-
-                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
-                    return;
-                }
+            // 2. Se falhar na URL, tenta buscar pelo ID gravado ou pelo último álbum salvo
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            if (idParam && savedAlbums[idParam]) {
+                const adminBtn = document.getElementById('adminButtonToggle');
+                if (adminBtn) adminBtn.classList.add('hidden');
+                loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                return;
             }
 
+            // 3. Fallback inteligente: se abrir um link direto mas o navegador bloqueou o parâmetro, pega o álbum mais recente salvo no aparelho
+            const keys = Object.keys(savedAlbums);
+            if (!dataParam && !idParam && keys.length > 0 && window.location.search.includes('?')) {
+                let latestKey = keys[keys.length - 1];
+                let item = savedAlbums[latestKey];
+                const adminBtn = document.getElementById('adminButtonToggle');
+                if (adminBtn) adminBtn.classList.add('hidden');
+                loadAlbumData(item.name, item.links);
+                return;
+            }
+
+            // 4. Caso contrário, exibe o login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -438,15 +449,15 @@
             }
 
             const encodedData = btoa(JSON.stringify(linkList));
-            const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
-
-            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             
             let cleanId = editingKey;
-            if (!cleanId || !savedAlbums[cleanId]) {
+            if (!cleanId) {
                 cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
             }
 
+            const universalLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}&nome=${encodeURIComponent(name)}&dados=${encodedData}`;
+
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             savedAlbums[cleanId] = {
                 name: name,
                 links: linkList,
@@ -567,13 +578,13 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- CONTADOR DE PROGRESSO DE 0 A 100% COM LIBERAÇÃO FORÇADA -->
+                        <!-- CONTADOR DE PROGRESSO COM LIBERAÇÃO FORÇADA -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
                         </div>
 
-                        <!-- IMAGEM COM SUPORTE TOTAL A REDES MÓVEIS -->
+                        <!-- IMAGEM COM SUPORTE TOTAL E REFERRERPOLICY PARA IMGBB -->
                         <img id="img-${photo.id}" src="${photo.url}" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
@@ -609,18 +620,18 @@
             
             let progressInterval = setInterval(() => {
                 if (currentPercent < 95) {
-                    currentPercent += Math.floor(Math.random() * 15) + 5;
+                    currentPercent += Math.floor(Math.random() * 18) + 5;
                     if (currentPercent > 95) currentPercent = 95;
                     if (percentEl) percentEl.innerText = currentPercent + '%';
                 }
-            }, 60);
+            }, 50);
 
             window['progress_' + id] = progressInterval;
 
-            // Segurança: libera o carregamento visual em 2 segundos para garantir que nenhuma foto fique travada
+            // Segurança: libera o carregamento visual em 1.5 segundos para garantir que nenhuma foto fique travada
             setTimeout(() => {
                 imageLoaded(id);
-            }, 2000);
+            }, 1500);
         }
 
         function imageLoaded(id) {
