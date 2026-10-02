@@ -157,7 +157,8 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <button id="adminButtonToggle" onclick="openAdminDashboard()" class="text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+            <!-- BOTÃO DO PAINEL OCULTO PARA CLIENTES -->
+            <button id="adminButtonToggle" onclick="openAdminDashboard()" class="hidden text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
                 ⚙ Painel de Clientes
             </button>
             <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
@@ -241,7 +242,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT 100% UNIVERSAL E BLINDADO -->
+    <!-- SCRIPT DEFINITIVO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -257,12 +258,17 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // 1. Leitura Prioritária Direta do Link (Universal para qualquer telemóvel)
+            // 1. Se houver parâmetros de dados do cliente, esconde totalmente o botão do painel e carrega o álbum
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
                     let decodedUrls = JSON.parse(decodedJson);
                     const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
+                    
+                    // Garante que o botão de administração fica escondido na visão da cliente
+                    const adminBtn = document.getElementById('adminButtonToggle');
+                    if (adminBtn) adminBtn.classList.add('hidden');
+
                     loadAlbumData(albumName, decodedUrls);
                     return;
                 } catch(e) {
@@ -270,16 +276,18 @@
                 }
             }
 
-            // 2. Fallback para ID local caso aberto no mesmo aparelho
             if (idParam) {
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
+                    const adminBtn = document.getElementById('adminButtonToggle');
+                    if (adminBtn) adminBtn.classList.add('hidden');
+
                     loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
                     return;
                 }
             }
 
-            // 3. Se não houver parâmetros, exibe o login do fotógrafo
+            // 2. Se não houver parâmetros, exibe a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -408,6 +416,9 @@
 
         function enterAsClientDemo() {
             document.getElementById('adminLoginModal').classList.add('hidden');
+            const adminBtn = document.getElementById('adminButtonToggle');
+            if (adminBtn) adminBtn.classList.add('hidden');
+
             let demoUrls = [];
             for(let i=1; i<=12; i++) {
                 demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
@@ -474,7 +485,7 @@
 
                 document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
                 document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
-                document.getElementById('cancelEditButton').classList.add('hidden');
+                document.getElementById('cancelEditButton').classList.remove('hidden');
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -614,7 +625,6 @@
 
             window['progress_' + id] = progressInterval;
 
-            // Segurança máxima: se demorar 2.5 segundos, libera a foto à força para nunca travar
             setTimeout(() => {
                 imageLoaded(id);
             }, 2500);
