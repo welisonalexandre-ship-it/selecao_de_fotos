@@ -29,7 +29,7 @@
     <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
             <div class="flex items-center justify-center mx-auto mb-4">
-                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-29 w-auto object-contain" alt="Logo">
+                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-20 w-auto object-contain" alt="Logo">
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
             <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
@@ -77,7 +77,7 @@
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-4">
-                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-28 w-auto object-contain">
+                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-16 w-auto object-contain">
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios & Segurança</h1>
                         <p class="text-xs text-slate-400">Gere links universais e gerencie seus ensaios</p>
@@ -88,7 +88,7 @@
 
             <!-- BOTÃO PARA EXIBIR / OCULTAR A ALTERAÇÃO DE SENHA -->
             <div class="mb-6">
-                <button onclick="togglePasswordSection()" id="togglePasswordBtn" class="text-xs text-amber-400 hover:text-amber-300 transition bg-slate-900/60 border border-amber-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
+                <button onclick="togglePasswordSection()" class="text-xs text-amber-400 hover:text-amber-300 transition bg-slate-900/60 border border-amber-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
                     <span>⚙️ Alterar Senha de Acesso ao Painel</span>
                 </button>
             </div>
@@ -149,7 +149,7 @@
     <!-- HEADER DO SITE (Visão da Cliente) -->
     <header class="border-b border-slate-800/80 bg-[#0b0f17]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-28 w-auto object-contain" alt="Logo">
+            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-12 w-auto object-contain" alt="Logo">
             <div>
                 <span class="text-[10px] tracking-widest uppercase text-amber-400 font-semibold block">Welison Alexandre</span>
                 <h1 id="headerAlbumTitle" class="font-bold text-sm sm:text-base text-white">Galeria de Seleção</h1>
@@ -206,8 +206,8 @@
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                    <h3 id="emptyTitle" class="text-base font-bold text-white">Nenhum ensaio carregado</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Abra o painel de clientes ou acesse através de um link de ensaio válido.</p>
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Por favor, aguarde um instante.</p>
                 </div>
             </div>
         </div>
@@ -241,7 +241,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DEFINITIVO -->
+    <!-- SCRIPT 100% UNIVERSAL E BLINDADO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -257,6 +257,7 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
+            // 1. Leitura Prioritária Direta do Link (Universal para qualquer telemóvel)
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -269,6 +270,7 @@
                 }
             }
 
+            // 2. Fallback para ID local caso aberto no mesmo aparelho
             if (idParam) {
                 let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
                 if (savedAlbums[idParam]) {
@@ -277,6 +279,7 @@
                 }
             }
 
+            // 3. Se não houver parâmetros, exibe o login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -471,7 +474,7 @@
 
                 document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
                 document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
-                document.getElementById('cancelEditButton').classList.remove('hidden');
+                document.getElementById('cancelEditButton').classList.add('hidden');
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -561,13 +564,13 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- CONTADOR DE PROGRESSO DE 0 A 100% EM CADA FOTO -->
+                        <!-- CONTADOR DE PROGRESSO DE 0 A 100% BLINDADO -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
                         </div>
 
-                        <!-- IMAGEM COM REVELAÇÃO SUAVE -->
+                        <!-- IMAGEM COM CARREGAMENTO ROBUSTO -->
                         <img id="img-${photo.id}" src="${photo.url}" onload="imageLoaded(${photo.id})" onerror="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
@@ -607,13 +610,14 @@
                     if (currentPercent > 95) currentPercent = 95;
                     if (percentEl) percentEl.innerText = currentPercent + '%';
                 }
-            }, 100);
+            }, 80);
 
             window['progress_' + id] = progressInterval;
 
+            // Segurança máxima: se demorar 2.5 segundos, libera a foto à força para nunca travar
             setTimeout(() => {
                 imageLoaded(id);
-            }, 3000);
+            }, 2500);
         }
 
         function imageLoaded(id) {
@@ -629,7 +633,7 @@
 
             if (loaderEl) {
                 loaderEl.style.opacity = '0';
-                setTimeout(() => { loaderEl.style.display = 'none'; }, 300);
+                setTimeout(() => { loaderEl.style.display = 'none'; }, 200);
             }
 
             if (imgEl) {
