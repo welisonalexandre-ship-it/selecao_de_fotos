@@ -25,7 +25,7 @@
 </head>
 <body class="bg-[#0b0f17] text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
 
-    <!-- TELA DE LOGIN DO FOTÓGRAFO (Oculta por padrão) -->
+    <!-- TELA DE LOGIN DO FOTÓGRAFO (Exibida por padrão se não houver link de cliente) -->
     <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
             <div class="flex items-center justify-center mx-auto mb-4">
@@ -201,9 +201,10 @@
 
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
-                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Por favor, aguarde um instante.</p>
+                <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl space-y-3">
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Nenhum ensaio carregado</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 max-w-sm px-4">Abra através de um link de ensaio válido ou faça login no painel.</p>
+                    <button onclick="document.getElementById('adminLoginModal').classList.remove('hidden')" class="bg-amber-500 text-slate-950 font-semibold text-xs px-4 py-2 rounded-xl transition">Acessar Painel do Fotógrafo</button>
                 </div>
             </div>
         </div>
@@ -237,7 +238,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DEFINITIVO DE CORREÇÃO DE IMAGENS -->
+    <!-- SCRIPT CORRIGIDO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -253,7 +254,7 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // 1. Tenta carregar os dados via URL
+            // 1. Tenta carregar dados via parâmetro da URL
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -279,17 +280,7 @@
                 return;
             }
 
-            // 3. Fallback inteligente de última sessão
-            const keys = Object.keys(savedAlbums);
-            if (!dataParam && !idParam && keys.length > 0 && window.location.search.includes('?')) {
-                let latestKey = keys[keys.length - 1];
-                let item = savedAlbums[latestKey];
-                const adminBtn = document.getElementById('adminButtonToggle');
-                if (adminBtn) adminBtn.classList.add('hidden');
-                loadAlbumData(item.name, item.links);
-                return;
-            }
-
+            // 3. Se não houver parâmetros de cliente, abre diretamente a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -348,13 +339,9 @@
             closeRecoveryModal();
         }
 
-        // LIMPADOR E CORRETOR UNIVERSAL DE LINKS DO IMGBB
         function cleanImgBBSource(url) {
             let clean = url.trim();
-            // Se for link de visualização do imgbb (ex: https://ibb.co/XYZ), converte para visualização direta se possível
-            // Garante o uso de HTTPS e remove parâmetros que causam bloqueio em mobile
             if (clean.includes('ibb.co') && !clean.includes('i.ibb.co')) {
-                // Tenta ajustar URLs mal copiadas
                 clean = clean.replace('ibb.co/', 'i.ibb.co/');
                 if (!clean.endsWith('.jpg') && !clean.endsWith('.png') && !clean.endsWith('.jpeg')) {
                     clean += '.jpg';
@@ -577,13 +564,11 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- CONTADOR DE PROGRESSO COM LIBERAÇÃO FORÇADA DE SEGURANÇA -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
                         </div>
 
-                        <!-- IMAGEM COM CROSSORIGIN E REFFERPOLICY BLINDADOS PARA IMGBB -->
                         <img id="img-${photo.id}" src="${photo.url}" crossorigin="anonymous" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="handleImageError(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
@@ -627,7 +612,6 @@
 
             window['progress_' + id] = progressInterval;
 
-            // Liberação garantida em 1.5 segundo para nunca travar a tela em celulares
             setTimeout(() => {
                 imageLoaded(id);
             }, 1500);
@@ -654,12 +638,10 @@
             }
         }
 
-        // Caso o ImgBB dê erro de carregamento direto no celular, aplica o bypass automático
         function handleImageError(id) {
             const imgEl = document.getElementById(`img-${id}`);
             if (imgEl && !imgEl.dataset.retried) {
                 imgEl.dataset.retried = "true";
-                // Tenta recarregar adicionando um carimbo de tempo para burlar o cache do navegador móvel
                 imgEl.src = imgEl.src.split('?')[0] + '?t=' + new Date().getTime();
                 return;
             }
@@ -737,7 +719,7 @@
         }
 
         function closeModal() {
-            document.getElementById('photoModal'].classList.add('hidden');
+            document.getElementById('photoModal').classList.add('hidden');
         }
 
         function saveModalComment() {
