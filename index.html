@@ -25,11 +25,11 @@
 </head>
 <body class="bg-[#0b0f17] text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
 
-    <!-- TELA DE LOGIN DO FOTÓGRAFO (Exibida por padrão se não houver link de cliente) -->
+    <!-- TELA DE LOGIN DO FOTÓGRAFO (Oculta por padrão) -->
     <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
             <div class="flex items-center justify-center mx-auto mb-4">
-                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-20 w-auto object-contain" alt="Logo">
+                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-29 w-auto object-contain" alt="Logo">
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
             <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
@@ -77,7 +77,7 @@
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-4">
-                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-16 w-auto object-contain">
+                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-28 w-auto object-contain">
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios & Segurança</h1>
                         <p class="text-xs text-slate-400">Gere links universais e gerencie seus ensaios</p>
@@ -120,9 +120,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)</label>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB[cite: 10].</p>
                 </div>
 
                 <div class="flex gap-3">
@@ -201,10 +201,9 @@
 
         <div class="lg:col-span-3">
             <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl space-y-3">
-                    <h3 id="emptyTitle" class="text-base font-bold text-white">Nenhum ensaio carregado</h3>
-                    <p id="emptySub" class="text-xs text-slate-400 max-w-sm px-4">Abra através de um link de ensaio válido ou faça login no painel.</p>
-                    <button onclick="document.getElementById('adminLoginModal').classList.remove('hidden')" class="bg-amber-500 text-slate-950 font-semibold text-xs px-4 py-2 rounded-xl transition">Acessar Painel do Fotógrafo</button>
+                <div id="emptyState" class="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-3xl">
+                    <h3 id="emptyTitle" class="text-base font-bold text-white">Carregando galeria...</h3>
+                    <p id="emptySub" class="text-xs text-slate-400 mt-1 max-w-sm px-4">Por favor, aguarde um instante.</p>
                 </div>
             </div>
         </div>
@@ -217,7 +216,7 @@
             <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/40 transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img id="modalImg" src="" crossorigin="anonymous" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain pointer-events-none select-none">
+                <img id="modalImg" src="" class="max-h-full max-w-full object-contain pointer-events-none select-none">
                 <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none p-4">
                     <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[60%] object-contain opacity-60">
                 </div>
@@ -238,7 +237,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO -->
+    <!-- SCRIPT BLINDADO PARA IMGBB E MÓVEIS -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -254,7 +253,6 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // 1. Tenta carregar dados via parâmetro da URL
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -271,16 +269,17 @@
                 }
             }
 
-            // 2. Fallback por ID local gravado
-            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-            if (idParam && savedAlbums[idParam]) {
-                const adminBtn = document.getElementById('adminButtonToggle');
-                if (adminBtn) adminBtn.classList.add('hidden');
-                loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
-                return;
+            if (idParam) {
+                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+                if (savedAlbums[idParam]) {
+                    const adminBtn = document.getElementById('adminButtonToggle');
+                    if (adminBtn) adminBtn.classList.add('hidden');
+
+                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                    return;
+                }
             }
 
-            // 3. Se não houver parâmetros de cliente, abre diretamente a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -310,7 +309,7 @@
             document.getElementById('newPasswordInput').value = '';
             document.getElementById('confirmPasswordInput').value = '';
             document.getElementById('passwordSection').classList.add('hidden');
-            alert('Senha alterada com sucesso!');
+            alert('Senha alterada com sucesso! Utilize esta nova senha nos próximos acessos.');
         }
 
         function openRecoveryModal() {
@@ -335,19 +334,10 @@
             }
 
             localStorage.setItem('wa_admin_password', newPass);
-            alert('Senha redefinida com sucesso!');
+            alert('Senha redefinida com sucesso! Faça login com a sua nova senha.');
             closeRecoveryModal();
-        }
-
-        function cleanImgBBSource(url) {
-            let clean = url.trim();
-            if (clean.includes('ibb.co') && !clean.includes('i.ibb.co')) {
-                clean = clean.replace('ibb.co/', 'i.ibb.co/');
-                if (!clean.endsWith('.jpg') && !clean.endsWith('.png') && !clean.endsWith('.jpeg')) {
-                    clean += '.jpg';
-                }
-            }
-            return clean;
+            document.getElementById('recoveryEmailInput').value = '';
+            document.getElementById('recoveryNewPassInput').value = '';
         }
 
         function extractFileName(url) {
@@ -371,7 +361,7 @@
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
                 id: index + 1,
-                url: cleanImgBBSource(url),
+                url: url.trim(),
                 name: extractFileName(url),
                 comment: '',
                 selected: false
@@ -383,6 +373,15 @@
         }
 
         document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P')) {
+                e.preventDefault();
+                alert('Ação bloqueada por motivos de direitos autorais.');
+            }
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c'))) {
+                e.preventDefault();
+            }
+        });
 
         function checkAdminLogin() {
             const pass = document.getElementById('adminPassword').value.trim();
@@ -393,7 +392,7 @@
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 openAdminDashboard();
             } else {
-                alert('Senha incorreta!');
+                alert('Senha incorreta! Se esqueceu, use a opção "Esqueceu a senha?".');
             }
         }
 
@@ -431,7 +430,7 @@
             if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
             if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
 
-            const linkList = rawLinks.split(/[\n,]+/).map(l => cleanImgBBSource(l)).filter(l => l.length > 5);
+            const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 5);
 
             if (linkList.length === 0) {
                 alert('Nenhuma ligação válida encontrada.');
@@ -439,11 +438,15 @@
             }
 
             const encodedData = btoa(JSON.stringify(linkList));
-            let cleanId = editingKey || (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100));
-
-            const universalLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}&nome=${encodeURIComponent(name)}&dados=${encodedData}`;
+            const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            
+            let cleanId = editingKey;
+            if (!cleanId || !savedAlbums[cleanId]) {
+                cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
+            }
+
             savedAlbums[cleanId] = {
                 name: name,
                 links: linkList,
@@ -461,7 +464,7 @@
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link gerado com sucesso! Copie abaixo:", universalLink);
+            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
         }
 
         function editClient(key) {
@@ -534,7 +537,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link universal copiado com sucesso!');
+            alert('Link universal copiado com sucesso! Pode enviar no WhatsApp da cliente.');
         }
 
         function renderGrid() {
@@ -564,12 +567,14 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
+                        <!-- CONTADOR DE PROGRESSO DE 0 A 100% COM LIBERAÇÃO FORÇADA -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
                         </div>
 
-                        <img id="img-${photo.id}" src="${photo.url}" crossorigin="anonymous" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="handleImageError(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
+                        <!-- IMAGEM COM SUPORTE TOTAL A REDES MÓVEIS -->
+                        <img id="img-${photo.id}" src="${photo.url}" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
                             <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[50%] object-contain opacity-50">
@@ -604,17 +609,18 @@
             
             let progressInterval = setInterval(() => {
                 if (currentPercent < 95) {
-                    currentPercent += Math.floor(Math.random() * 20) + 5;
+                    currentPercent += Math.floor(Math.random() * 15) + 5;
                     if (currentPercent > 95) currentPercent = 95;
                     if (percentEl) percentEl.innerText = currentPercent + '%';
                 }
-            }, 40);
+            }, 60);
 
             window['progress_' + id] = progressInterval;
 
+            // Segurança: libera o carregamento visual em 2 segundos para garantir que nenhuma foto fique travada
             setTimeout(() => {
                 imageLoaded(id);
-            }, 1500);
+            }, 2000);
         }
 
         function imageLoaded(id) {
@@ -636,16 +642,6 @@
             if (imgEl) {
                 imgEl.style.opacity = '1';
             }
-        }
-
-        function handleImageError(id) {
-            const imgEl = document.getElementById(`img-${id}`);
-            if (imgEl && !imgEl.dataset.retried) {
-                imgEl.dataset.retried = "true";
-                imgEl.src = imgEl.src.split('?')[0] + '?t=' + new Date().getTime();
-                return;
-            }
-            imageLoaded(id);
         }
 
         function setFilter(filter) {
