@@ -19,33 +19,77 @@
             to { opacity: 1; }
         }
         .fade-in {
-            animation: fadeIn 0.4s ease-in-out forwards;
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        /* Efeito de brilho dourado metálico idêntico à referência */
+        .gold-border {
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(212, 175, 55, 0.05);
+        }
+        .gold-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .gold-button:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #b45309 100%);
         }
     </style>
 </head>
-<body class="bg-[#0b0f17] text-slate-100 min-h-screen flex flex-col antialiased" oncontextmenu="return false;">
+<body class="bg-[#05080e] text-slate-100 min-h-screen flex flex-col antialiased relative overflow-x-hidden" oncontextmenu="return false;">
 
-    <!-- TELA DE LOGIN DO FOTÓGRAFO (Oculta por padrão) -->
-    <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center">
-            <div class="flex items-center justify-center mx-auto mb-4">
-                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-29 w-auto object-contain" alt="Logo">
+    <!-- TELA DE LOGIN DO FOTÓGRAFO (Com visual idêntico à referência) -->
+    <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-[#04060a] flex items-center justify-center p-4">
+        
+        <!-- Fundo fotográfico simulando estúdio com a câmera à direita e logotipo esmaecido à esquerda -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <!-- Câmera profissional difusa à direita (simulando a foto) -->
+            <div class="absolute -right-20 -bottom-20 w-[600px] h-[600px] bg-[radial-gradient(circle,_rgba(30,41,59,0.5)_0%,_transparent_70%)] rounded-full blur-2xl"></div>
+            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-[450px] h-[450px] opacity-25 bg-cover bg-no-repeat bg-center" style="background-image: url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop'); filter: brightness(0.6) contrast(1.2);"></div>
+            
+            <!-- Logotipo grande esmaecido no canto esquerdo da tela como marca d'água de fundo -->
+            <div class="absolute left-10 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
+                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="w-[450px] object-contain">
+                <p class="text-amber-400/60 uppercase tracking-[0.3em] text-sm mt-4 font-light text-center">Registrando o que importa</p>
             </div>
-            <h2 class="text-xl font-bold text-white mb-2">Painel Restrito do Fotógrafo</h2>
-            <p class="text-xs text-slate-400 mb-6">Digite sua senha de acesso para gerenciar seus ensaios.</p>
+        </div>
+
+        <!-- Caixa Central Luxuosa -->
+        <div class="relative gold-border bg-[#070b14]/90 p-8 sm:p-10 rounded-[2rem] max-w-md w-full text-center backdrop-blur-2xl z-10">
             
-            <input type="password" id="adminPassword" autocapitalize="none" autocomplete="off" autocorrect="off" placeholder="Senha de acesso" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 mb-4">
+            <div class="flex items-center justify-center mx-auto mb-4">
+                <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-24 w-auto object-contain filter drop-shadow-[0_2px_10px_rgba(245,158,11,0.2)]" alt="Logo">
+            </div>
+
+            <!-- Ícone de câmara centralizado -->
+            <div class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-3">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+            </div>
+
+            <h2 class="text-lg font-bold text-white tracking-wide mb-1">Painel Restrito do Fotógrafo</h2>
+            <p class="text-[11px] text-slate-400 mb-6 font-light">Digite sua senha de acesso para gerenciar seus ensaios.</p>
             
-            <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20 mb-3">
-                Acessar Painel
+            <!-- Campo de senha com ícone de chave/cadeado -->
+            <div class="relative mb-4">
+                <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </span>
+                <input type="password" id="adminPassword" autocapitalize="none" autocomplete="off" autocorrect="off" placeholder="Senha de acesso" class="w-full bg-[#04060a] border border-slate-800 rounded-xl pl-11 pr-11 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 transition">
+                <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                </span>
+            </div>
+            
+            <button onclick="checkAdminLogin()" class="w-full gold-button text-slate-950 font-bold py-3.5 rounded-xl transition text-sm mb-6 flex items-center justify-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                <span>Acessar Painel</span>
             </button>
 
-            <div class="flex items-center justify-between mt-2 px-1">
-                <button onclick="openRecoveryModal()" class="text-xs text-amber-400 hover:underline transition">
-                    Esqueceu a senha?
+            <div class="flex items-center justify-between text-[11px] px-1 border-t border-slate-800/80 pt-4 text-slate-400">
+                <button onclick="openRecoveryModal()" class="hover:text-amber-400 transition flex items-center space-x-1">
+                    <span>🔒 Esqueceu a senha?</span>
                 </button>
-                <button onclick="enterAsClientDemo()" class="text-xs text-slate-400 hover:text-amber-400 transition underline">
-                    Demonstração
+                <button onclick="enterAsClientDemo()" class="hover:text-amber-400 transition flex items-center space-x-1">
+                    <span>Demonstração →</span>
                 </button>
             </div>
         </div>
@@ -55,7 +99,7 @@
     <div id="recoveryModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 relative shadow-2xl text-center">
             <h2 class="text-base font-bold text-white mb-2">🔒 Recuperação de Senha</h2>
-            <p class="text-xs text-slate-400 mb-4">Para sua segurança, digite o e-mail administrativo autorizado para cadastrar uma nova senha.</p>
+            <p class="text-xs text-slate-400 mb-4">Para sua segurança, digite o e-mail administrativo autorizado.</p>
             
             <input type="email" id="recoveryEmailInput" autocapitalize="none" placeholder="seu-email@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-3">
             
@@ -73,11 +117,11 @@
     </div>
 
     <!-- PAINEL DE GESTÃO DE CLIENTES -->
-    <div id="adminDashboard" class="hidden fixed inset-0 z-40 bg-[#0b0f17] overflow-y-auto p-4 sm:p-8">
+    <div id="adminDashboard" class="hidden fixed inset-0 z-40 bg-[#05080e] overflow-y-auto p-4 sm:p-8">
         <div class="max-w-4xl mx-auto py-6">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div class="flex items-center space-x-4">
-                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-28 w-auto object-contain">
+                    <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-20 w-auto object-contain">
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios & Segurança</h1>
                         <p class="text-xs text-slate-400">Gere links universais e gerencie seus ensaios</p>
@@ -120,9 +164,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)</label>
-                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB.</p>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas (Cole em lote, separados por espaço, vírgula ou linha)</label>
+                    <textarea id="clientPhotoLinksInput" placeholder="https://i.imgur.com/... https://i.imgur.com/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">O sistema separa os links automaticamente.</p>
                 </div>
 
                 <div class="flex gap-3">
@@ -143,9 +187,9 @@
     </div>
 
     <!-- HEADER DO SITE (Visão da Cliente) -->
-    <header class="border-b border-slate-800/80 bg-[#0b0f17]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+    <header class="border-b border-slate-800/80 bg-[#05080e]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="h-12 w-auto object-contain" alt="Logo">
+            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-12 w-auto object-contain" alt="Logo">
             <div>
                 <span class="text-[10px] tracking-widest uppercase text-amber-400 font-semibold block">Welison Alexandre</span>
                 <h1 id="headerAlbumTitle" class="font-bold text-sm sm:text-base text-white">Galeria de Seleção</h1>
@@ -237,7 +281,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT OTIMIZADO PARA CARREGAMENTO INSTANTÂNEO -->
+    <!-- SCRIPT DE FUNCIONAMENTO -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -296,14 +340,8 @@
             const newPass = document.getElementById('newPasswordInput').value.trim();
             const confirmPass = document.getElementById('confirmPasswordInput').value.trim();
 
-            if (!newPass) {
-                alert('Digite a nova senha.');
-                return;
-            }
-            if (newPass !== confirmPass) {
-                alert('As senhas não coincidem. Tente novamente.');
-                return;
-            }
+            if (!newPass) { alert('Digite a nova senha.'); return; }
+            if (newPass !== confirmPass) { alert('As senhas não coincidem.'); return; }
 
             localStorage.setItem('wa_admin_password', newPass);
             document.getElementById('newPasswordInput').value = '';
@@ -312,27 +350,14 @@
             alert('Senha alterada com sucesso!');
         }
 
-        function openRecoveryModal() {
-            document.getElementById('recoveryModal').classList.remove('hidden');
-        }
-
-        function closeRecoveryModal() {
-            document.getElementById('recoveryModal').classList.add('hidden');
-        }
+        function openRecoveryModal() { document.getElementById('recoveryModal').classList.remove('hidden'); }
+        function closeRecoveryModal() { document.getElementById('recoveryModal').classList.add('hidden'); }
 
         function resetPasswordWithEmail() {
             const emailInput = document.getElementById('recoveryEmailInput').value.trim().toLowerCase();
             const newPass = document.getElementById('recoveryNewPassInput').value.trim();
-
-            if (emailInput !== ADMIN_EMAIL) {
-                alert('E-mail incorreto ou não autorizado!');
-                return;
-            }
-            if (!newPass) {
-                alert('Digite a nova senha.');
-                return;
-            }
-
+            if (emailInput !== ADMIN_EMAIL) { alert('E-mail não autorizado!'); return; }
+            if (!newPass) { alert('Digite a nova senha.'); return; }
             localStorage.setItem('wa_admin_password', newPass);
             alert('Senha redefinida com sucesso!');
             closeRecoveryModal();
@@ -343,13 +368,9 @@
                 const cleanUrl = url.split('?')[0];
                 const segments = cleanUrl.split('/');
                 let filename = segments.pop();
-                if (!filename || filename.indexOf('.') === -1) {
-                    filename = segments.pop() || 'foto.jpg';
-                }
+                if (!filename || filename.indexOf('.') === -1) { filename = segments.pop() || 'foto.jpg'; }
                 return decodeURIComponent(filename);
-            } catch (e) {
-                return 'foto.jpg';
-            }
+            } catch (e) { return 'foto.jpg'; }
         }
 
         function loadAlbumData(name, links) {
@@ -374,9 +395,7 @@
 
         function checkAdminLogin() {
             const pass = document.getElementById('adminPassword').value.trim();
-            const currentPass = getAdminPassword().trim();
-
-            if (pass === currentPass) {
+            if (pass === getAdminPassword().trim()) {
                 document.getElementById('adminPassword').value = '';
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 openAdminDashboard();
@@ -401,9 +420,7 @@
             if (adminBtn) adminBtn.classList.add('hidden');
 
             let demoUrls = [];
-            for(let i=1; i<=12; i++) {
-                demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`);
-            }
+            for(let i=1; i<=12; i++) { demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`); }
             loadAlbumData("Maria & Eduardo (Demo)", demoUrls);
         }
 
@@ -419,12 +436,8 @@
             if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
             if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
 
-            const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 5);
-
-            if (linkList.length === 0) {
-                alert('Nenhuma ligação válida encontrada.');
-                return;
-            }
+            const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
+            if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
 
             const encodedData = btoa(JSON.stringify(linkList));
             const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
@@ -432,18 +445,10 @@
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             let cleanId = editingKey || (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100));
 
-            savedAlbums[cleanId] = {
-                name: name,
-                links: linkList,
-                date: new Date().toLocaleDateString(),
-                universalLink: universalLink
-            };
-
+            savedAlbums[cleanId] = { name: name, links: linkList, date: new Date().toLocaleDateString(), universalLink: universalLink };
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
-            nameInput.value = '';
-            linksInput.value = '';
-            editingKeyInput.value = '';
+            nameInput.value = ''; linksInput.value = ''; editingKeyInput.value = '';
             document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
             document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
             document.getElementById('cancelEditButton').classList.add('hidden');
@@ -459,11 +464,9 @@
                 document.getElementById('clientNameInput').value = item.name;
                 document.getElementById('clientPhotoLinksInput').value = item.links.join('\n');
                 document.getElementById('editingClientKey').value = key;
-
                 document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
                 document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
                 document.getElementById('cancelEditButton').classList.remove('hidden');
-
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -501,7 +504,6 @@
             let html = '';
             keys.forEach(key => {
                 let item = savedAlbums[key];
-                let linkToCopy = item.universalLink;
                 html += `
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
@@ -509,10 +511,10 @@
                             <p class="text-xs text-slate-400">Fotos: ${item.links.length} | Criado em: ${item.date}</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <button onclick="copySpecificLink('${linkToCopy}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
+                            <button onclick="copySpecificLink('${item.universalLink}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl transition">Copiar Link</button>
                             <button onclick="editClient('${key}')" class="bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 text-xs px-3 py-2 rounded-xl transition">Editar</button>
                             <button onclick="deleteClient('${key}')" class="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs px-3 py-2 rounded-xl transition">Excluir</button>
-                            <a href="${linkToCopy}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir</a>
+                            <a href="${item.universalLink}" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs px-3 py-2 rounded-xl transition">Abrir</a>
                         </div>
                     </div>
                 `;
@@ -552,11 +554,10 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- CARREGAMENTO INSTANTÂNEO COM LAZY LOADING NATIVO -->
-                        <img id="img-${photo.id}" src="${photo.url}" loading="lazy" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-100" onclick="openModal(${photo.id})" />
+                        <img src="${photo.url}" loading="lazy" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-cover cursor-pointer fade-in" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none p-2">
-                            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[50%] object-contain opacity-50">
+                            <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="max-w-[50%] object-contain opacity-50">
                         </div>
 
                         <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
@@ -576,10 +577,6 @@
 
             grid.innerHTML = html;
             updateCounters();
-        }
-
-        function imageLoaded(id) {
-            // Imagem carregada instantaneamente pelo navegador
         }
 
         function setFilter(filter) {
@@ -653,9 +650,7 @@
             document.getElementById('photoModal').classList.remove('hidden');
         }
 
-        function closeModal() {
-            document.getElementById('photoModal').classList.add('hidden');
-        }
+        function closeModal() { document.getElementById('photoModal').classList.add('hidden'); }
 
         function saveModalComment() {
             const photo = currentAlbum.photos.find(p => p.id === currentModalPhotoId);
@@ -681,18 +676,12 @@
 
         function finalizeSelectionWhatsApp() {
             const selectedList = currentAlbum.photos.filter(p => p.selected);
-            if (selectedList.length === 0) {
-                alert('Selecione ao menos uma foto antes de enviar.');
-                return;
-            }
+            if (selectedList.length === 0) { alert('Selecione ao menos uma foto antes de enviar.'); return; }
 
             let msg = `Olá! Terminei a seleção do ensaio de *${currentAlbum.name}*.\n\nTotal escolhidas: *${selectedList.length} fotos*:\n\n`;
-            
             selectedList.forEach(p => {
                 msg += `• ${p.name}`;
-                if (p.comment) {
-                    msg += ` (Obs: ${p.comment})`;
-                }
+                if (p.comment) { msg += ` (Obs: ${p.comment})`; }
                 msg += `\n`;
             });
 
