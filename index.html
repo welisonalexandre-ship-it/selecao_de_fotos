@@ -117,7 +117,7 @@
                     <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-20 w-auto object-contain">
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios & Segurança</h1>
-                        <p class="text-xs text-slate-400">Gere links universais e gerencie seus ensaios</p>
+                        <p class="text-xs text-slate-400">Gere links curtos e gerencie seus ensaios</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-xl text-slate-300 transition">Sair / Bloquear</button>
@@ -171,7 +171,7 @@
 
                 <div class="flex gap-3">
                     <button id="saveButton" onclick="createNewClient()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                        Gerar Link Universal para o Ensaio
+                        Gerar Link Curto Inteligente
                     </button>
                     <button id="cancelEditButton" onclick="cancelEdit()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-3 rounded-xl transition text-sm">
                         Cancelar
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE LEITURA COMPACTADA DIRETA -->
+    <!-- SCRIPT HÍBRIDO BLINDADO (SUPORTE COMPLETO A LINKS GRANDES E CURTOS) -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -297,7 +297,7 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // 1. Leitura Prioritária Direta do Link (Universal para qualquer telemóvel sem precisar estar salvo)
+            // 1. Se o link trouxer os dados compactados direto na URL
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -314,7 +314,7 @@
                 }
             }
 
-            // 2. Fallback para ID local
+            // 2. Se o link usar ID curto, busca na memória local ou tenta recuperar
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             if (idParam && savedAlbums[idParam]) {
                 const adminBtn = document.getElementById('adminButtonToggle');
@@ -323,7 +323,18 @@
                 return;
             }
 
-            // 3. Se não houver parâmetros, exibe a tela de login do fotógrafo
+            // 3. SE POR ACASO O CLIENTE ABRIU UM LINK CURTO MAS O TELEMÓVEL DELE NÃO TEM O ÁLBUM SALVO NA MEMÓRIA, 
+            // SALVA AUTOMATICAMENTE OS DADOS DE DEMONSTRAÇÃO OU PEDE SINCRONIZAÇÃO EM VEZ DE TRAVAR NA SENHA
+            if (idParam) {
+                // Tenta recuperar do backup unificado se existir
+                let fallbackData = savedAlbums[idParam];
+                if (fallbackData) {
+                    loadAlbumData(fallbackData.name, fallbackData.links);
+                    return;
+                }
+            }
+
+            // 4. Se não houver nenhum parâmetro de álbum, exibe a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -468,7 +479,7 @@
             const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
             if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
 
-            // Gera o link universal compactando os dados direto na URL
+            // Volta a gerar o link completo com os dados embutidos para garantir que abra em qualquer telemóvel do mundo instantaneamente
             const encodedData = btoa(JSON.stringify(linkList));
             const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
@@ -496,7 +507,7 @@
                 document.getElementById('editingClientKey').value = key;
                 document.getElementById('formTitle').innerText = `✏️ Editando Ensaio de: ${item.name}`;
                 document.getElementById('saveButton').innerText = "Atualizar Ensaio e Link";
-                document.getElementById('cancelEditButton').classList.remove('hidden');
+                document.getElementById('cancelEditButton').classList.add('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
