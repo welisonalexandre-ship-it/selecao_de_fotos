@@ -171,7 +171,7 @@
 
                 <div class="flex gap-3">
                     <button id="saveButton" onclick="createNewClient()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                        Gerar Link Curto e Universal para o Ensaio
+                        Gerar Link Universal para o Ensaio
                     </button>
                     <button id="cancelEditButton" onclick="cancelEdit()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-3 rounded-xl transition text-sm">
                         Cancelar
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE GESTÃO DE LINKS CURTOS -->
+    <!-- SCRIPT DE LEITURA COMPACTADA DIRETA -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -290,14 +290,32 @@
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('dados');
+            const nameParam = urlParams.get('nome');
             const idParam = urlParams.get('id');
 
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // Carrega os álbuns salvos localmente
-            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            // 1. Leitura Prioritária Direta do Link (Universal para qualquer telemóvel sem precisar estar salvo)
+            if (dataParam) {
+                try {
+                    let decodedJson = atob(dataParam);
+                    let decodedUrls = JSON.parse(decodedJson);
+                    const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
+                    
+                    const adminBtn = document.getElementById('adminButtonToggle');
+                    if (adminBtn) adminBtn.classList.add('hidden');
 
+                    loadAlbumData(albumName, decodedUrls);
+                    return;
+                } catch(e) {
+                    console.error("Erro ao descodificar dados:", e);
+                }
+            }
+
+            // 2. Fallback para ID local
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             if (idParam && savedAlbums[idParam]) {
                 const adminBtn = document.getElementById('adminButtonToggle');
                 if (adminBtn) adminBtn.classList.add('hidden');
@@ -305,7 +323,7 @@
                 return;
             }
 
-            // Se abrir sem ID, exibe o painel de login do fotógrafo
+            // 3. Se não houver parâmetros, exibe a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -450,21 +468,23 @@
             const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
             if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
 
+            // Gera o link universal compactando os dados direto na URL
+            const encodedData = btoa(JSON.stringify(linkList));
+            const universalLink = `${window.location.origin}${window.location.pathname}?nome=${encodeURIComponent(name)}&dados=${encodedData}`;
+
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             let cleanId = editingKey || (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100));
-
-            const universalLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}`;
 
             savedAlbums[cleanId] = { name: name, links: linkList, date: new Date().toLocaleDateString(), universalLink: universalLink };
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
 
             nameInput.value = ''; linksInput.value = ''; editingKeyInput.value = '';
             document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
-            document.getElementById('saveButton').innerText = "Gerar Link Curto e Universal para o Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link curto gerado com sucesso! Copie abaixo:", universalLink);
+            prompt("Link universal gerado com sucesso! Copie abaixo:", universalLink);
         }
 
         function editClient(key) {
@@ -486,7 +506,7 @@
             document.getElementById('clientPhotoLinksInput').value = '';
             document.getElementById('editingClientKey').value = '';
             document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
-            document.getElementById('saveButton').innerText = "Gerar Link Curto e Universal para o Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Universal para o Ensaio";
             document.getElementById('cancelEditButton').classList.add('hidden');
         }
 
@@ -534,7 +554,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link curto copiado com sucesso!');
+            alert('Link universal copiado com sucesso!');
         }
 
         function renderGrid() {
