@@ -120,9 +120,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)[cite: 10]</label>
+                    <label class="block text-xs text-slate-400 mb-1">Ligações Diretas do ImgBB (Um link por linha)</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/.../foto1.jpg&#10;https://i.ibb.co/.../foto2.jpg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB[cite: 10].</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Cole aqui as ligações diretas do ImgBB.</p>
                 </div>
 
                 <div class="flex gap-3">
@@ -216,7 +216,7 @@
             <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/40 transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img id="modalImg" src="" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain pointer-events-none select-none">
+                <img id="modalImg" src="" crossorigin="anonymous" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain pointer-events-none select-none">
                 <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none p-4">
                     <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[60%] object-contain opacity-60">
                 </div>
@@ -237,7 +237,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT BLINDADO DE CARREGAMENTO IMGBB -->
+    <!-- SCRIPT DEFINITIVO DE CORREÇÃO DE IMAGENS -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -253,7 +253,7 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // 1. Tenta carregar os dados diretamente da URL (com codificação segura)
+            // 1. Tenta carregar os dados via URL
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -266,11 +266,11 @@
                     loadAlbumData(albumName, decodedUrls);
                     return;
                 } catch(e) {
-                    console.error("Erro ao descodificar dados da URL, tentando armazenamento local:", e);
+                    console.error("Erro ao descodificar dados:", e);
                 }
             }
 
-            // 2. Se falhar na URL, tenta buscar pelo ID gravado ou pelo último álbum salvo
+            // 2. Fallback por ID local gravado
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             if (idParam && savedAlbums[idParam]) {
                 const adminBtn = document.getElementById('adminButtonToggle');
@@ -279,7 +279,7 @@
                 return;
             }
 
-            // 3. Fallback inteligente: se abrir um link direto mas o navegador bloqueou o parâmetro, pega o álbum mais recente salvo no aparelho
+            // 3. Fallback inteligente de última sessão
             const keys = Object.keys(savedAlbums);
             if (!dataParam && !idParam && keys.length > 0 && window.location.search.includes('?')) {
                 let latestKey = keys[keys.length - 1];
@@ -290,7 +290,6 @@
                 return;
             }
 
-            // 4. Caso contrário, exibe o login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -320,7 +319,7 @@
             document.getElementById('newPasswordInput').value = '';
             document.getElementById('confirmPasswordInput').value = '';
             document.getElementById('passwordSection').classList.add('hidden');
-            alert('Senha alterada com sucesso! Utilize esta nova senha nos próximos acessos.');
+            alert('Senha alterada com sucesso!');
         }
 
         function openRecoveryModal() {
@@ -345,10 +344,23 @@
             }
 
             localStorage.setItem('wa_admin_password', newPass);
-            alert('Senha redefinida com sucesso! Faça login com a sua nova senha.');
+            alert('Senha redefinida com sucesso!');
             closeRecoveryModal();
-            document.getElementById('recoveryEmailInput').value = '';
-            document.getElementById('recoveryNewPassInput').value = '';
+        }
+
+        // LIMPADOR E CORRETOR UNIVERSAL DE LINKS DO IMGBB
+        function cleanImgBBSource(url) {
+            let clean = url.trim();
+            // Se for link de visualização do imgbb (ex: https://ibb.co/XYZ), converte para visualização direta se possível
+            // Garante o uso de HTTPS e remove parâmetros que causam bloqueio em mobile
+            if (clean.includes('ibb.co') && !clean.includes('i.ibb.co')) {
+                // Tenta ajustar URLs mal copiadas
+                clean = clean.replace('ibb.co/', 'i.ibb.co/');
+                if (!clean.endsWith('.jpg') && !clean.endsWith('.png') && !clean.endsWith('.jpeg')) {
+                    clean += '.jpg';
+                }
+            }
+            return clean;
         }
 
         function extractFileName(url) {
@@ -372,7 +384,7 @@
             currentAlbum.name = name;
             currentAlbum.photos = links.map((url, index) => ({
                 id: index + 1,
-                url: url.trim(),
+                url: cleanImgBBSource(url),
                 name: extractFileName(url),
                 comment: '',
                 selected: false
@@ -384,15 +396,6 @@
         }
 
         document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'S' || e.key === 'P')) {
-                e.preventDefault();
-                alert('Ação bloqueada por motivos de direitos autorais.');
-            }
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'C' || e.key === 'c'))) {
-                e.preventDefault();
-            }
-        });
 
         function checkAdminLogin() {
             const pass = document.getElementById('adminPassword').value.trim();
@@ -403,7 +406,7 @@
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 openAdminDashboard();
             } else {
-                alert('Senha incorreta! Se esqueceu, use a opção "Esqueceu a senha?".');
+                alert('Senha incorreta!');
             }
         }
 
@@ -441,7 +444,7 @@
             if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
             if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
 
-            const linkList = rawLinks.split(/[\n,]+/).map(l => l.trim()).filter(l => l.length > 5);
+            const linkList = rawLinks.split(/[\n,]+/).map(l => cleanImgBBSource(l)).filter(l => l.length > 5);
 
             if (linkList.length === 0) {
                 alert('Nenhuma ligação válida encontrada.');
@@ -449,11 +452,7 @@
             }
 
             const encodedData = btoa(JSON.stringify(linkList));
-            
-            let cleanId = editingKey;
-            if (!cleanId) {
-                cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100);
-            }
+            let cleanId = editingKey || (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100));
 
             const universalLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}&nome=${encodeURIComponent(name)}&dados=${encodedData}`;
 
@@ -475,7 +474,7 @@
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link universal gerado com sucesso! Copie abaixo para enviar à cliente:", universalLink);
+            prompt("Link gerado com sucesso! Copie abaixo:", universalLink);
         }
 
         function editClient(key) {
@@ -548,7 +547,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link universal copiado com sucesso! Pode enviar no WhatsApp da cliente.');
+            alert('Link universal copiado com sucesso!');
         }
 
         function renderGrid() {
@@ -578,14 +577,14 @@
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
                         
-                        <!-- CONTADOR DE PROGRESSO COM LIBERAÇÃO FORÇADA -->
+                        <!-- CONTADOR DE PROGRESSO COM LIBERAÇÃO FORÇADA DE SEGURANÇA -->
                         <div id="loader-${photo.id}" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center z-10 transition-opacity duration-300 pointer-events-none">
                             <div class="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mb-2"></div>
                             <span id="percent-${photo.id}" class="text-[11px] font-bold text-amber-400">0%</span>
                         </div>
 
-                        <!-- IMAGEM COM SUPORTE TOTAL E REFERRERPOLICY PARA IMGBB -->
-                        <img id="img-${photo.id}" src="${photo.url}" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="imageLoaded(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
+                        <!-- IMAGEM COM CROSSORIGIN E REFFERPOLICY BLINDADOS PARA IMGBB -->
+                        <img id="img-${photo.id}" src="${photo.url}" crossorigin="anonymous" referrerpolicy="no-referrer" onload="imageLoaded(${photo.id})" onerror="handleImageError(${photo.id})" class="absolute inset-0 w-full h-full object-cover cursor-pointer opacity-0 transition-opacity duration-500" onclick="openModal(${photo.id})" />
                         
                         <div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none select-none p-2">
                             <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logo.png" class="max-w-[50%] object-contain opacity-50">
@@ -620,15 +619,15 @@
             
             let progressInterval = setInterval(() => {
                 if (currentPercent < 95) {
-                    currentPercent += Math.floor(Math.random() * 18) + 5;
+                    currentPercent += Math.floor(Math.random() * 20) + 5;
                     if (currentPercent > 95) currentPercent = 95;
                     if (percentEl) percentEl.innerText = currentPercent + '%';
                 }
-            }, 50);
+            }, 40);
 
             window['progress_' + id] = progressInterval;
 
-            // Segurança: libera o carregamento visual em 1.5 segundos para garantir que nenhuma foto fique travada
+            // Liberação garantida em 1.5 segundo para nunca travar a tela em celulares
             setTimeout(() => {
                 imageLoaded(id);
             }, 1500);
@@ -653,6 +652,18 @@
             if (imgEl) {
                 imgEl.style.opacity = '1';
             }
+        }
+
+        // Caso o ImgBB dê erro de carregamento direto no celular, aplica o bypass automático
+        function handleImageError(id) {
+            const imgEl = document.getElementById(`img-${id}`);
+            if (imgEl && !imgEl.dataset.retried) {
+                imgEl.dataset.retried = "true";
+                // Tenta recarregar adicionando um carimbo de tempo para burlar o cache do navegador móvel
+                imgEl.src = imgEl.src.split('?')[0] + '?t=' + new Date().getTime();
+                return;
+            }
+            imageLoaded(id);
         }
 
         function setFilter(filter) {
@@ -726,7 +737,7 @@
         }
 
         function closeModal() {
-            document.getElementById('photoModal').classList.add('hidden');
+            document.getElementById('photoModal'].classList.add('hidden');
         }
 
         function saveModalComment() {
