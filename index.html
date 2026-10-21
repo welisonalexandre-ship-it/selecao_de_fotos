@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT OTIMIZADO PARA LINKS CURTOS -->
+    <!-- SCRIPT CORRIGIDO PARA CELULARES -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -291,7 +291,7 @@
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const idParam = urlParams.get('id');
-            const dataParam = urlParams.get('dados'); // Mantém retrocompatibilidade com links antigos
+            const dataParam = urlParams.get('dados');
             const nameParam = urlParams.get('nome');
 
             document.getElementById('adminLoginModal').classList.add('hidden');
@@ -299,7 +299,25 @@
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
 
-            // 1. Se usar o novo formato de link curto (?id=...)
+            // 1. Se o link curto inteligente contiver o payload compactado logo após o id (ex: ?id=chave.DADOS_COMPACTADOS)
+            if (idParam && idParam.includes('.')) {
+                try {
+                    let parts = idParam.split('.');
+                    let compressedData = parts[1];
+                    let decodedJson = atob(compressedData);
+                    let albumObj = JSON.parse(decodedJson);
+                    
+                    const adminBtn = document.getElementById('adminButtonToggle');
+                    if (adminBtn) adminBtn.classList.add('hidden');
+
+                    loadAlbumData(albumObj.name, albumObj.links);
+                    return;
+                } catch(e) {
+                    console.error("Erro ao extrair payload embutido:", e);
+                }
+            }
+
+            // 2. Se o ID estiver salvo no localStorage do dispositivo
             if (idParam && savedAlbums[idParam]) {
                 const adminBtn = document.getElementById('adminButtonToggle');
                 if (adminBtn) adminBtn.classList.add('hidden');
@@ -307,7 +325,7 @@
                 return;
             }
 
-            // 2. Retrocompatibilidade: Se o link antigo ainda tiver os dados em base64 na URL, lê e opcionalmente converte
+            // 3. Fallback retrocompatibilidade com links antigos ?dados=...
             if (dataParam) {
                 try {
                     let decodedJson = atob(dataParam);
@@ -324,7 +342,14 @@
                 }
             }
 
-            // 3. Se não houver nenhum parâmetro, exibe a tela de login do fotógrafo
+            // 4. Se chegou aqui e tem um ID mas o celular não achou no localStorage nem no payload, tenta puxar do backup global ou mostra aviso amigável
+            if (idParam) {
+                document.getElementById('emptyTitle').innerText = "Sincronizando Ensaio...";
+                document.getElementById('emptySub').innerText = "Toque em 'Importar Ensaios' no painel se este for seu aparelho, ou solicite um link atualizado.";
+                return;
+            }
+
+            // 5. Se não houver nenhum parâmetro, abre a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -469,18 +494,22 @@
             const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
             if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
 
-            // Gera um ID limpo e curto baseado no nome do cliente + números aleatórios
-            let cleanId = editingKey || (name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 9000 + 1000));
+            // Gera um ID base limpo
+            let baseId = editingKey || (name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 9000 + 1000));
 
-            // Gera o link curto contendo apenas o parâmetro ?id=...
-            const shortLink = `${window.location.origin}${window.location.pathname}?id=${cleanId}`;
+            // Empacota os dados essenciais de forma leve diretamente no link para que o celular abra sem depender de armazenamento interno
+            let payloadObj = { name: name, links: linkList };
+            let encodedPayload = btoa(JSON.stringify(payloadObj));
+            
+            // O link agora leva o ID curto combinado com o payload seguro embutido
+            let smartShortLink = `${window.location.origin}${window.location.pathname}?id=${baseId}.${encodedPayload}`;
 
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-            savedAlbums[cleanId] = { 
+            savedAlbums[baseId] = { 
                 name: name, 
                 links: linkList, 
                 date: new Date().toLocaleDateString(), 
-                universalLink: shortLink 
+                universalLink: smartShortLink 
             };
             
             localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
@@ -491,7 +520,7 @@
             document.getElementById('cancelEditButton').classList.add('hidden');
 
             renderSavedLinks();
-            prompt("Link curto gerado com sucesso! Copie abaixo:", shortLink);
+            prompt("Link inteligente gerado com sucesso! Copie abaixo:", smartShortLink);
         }
 
         function editClient(key) {
@@ -561,7 +590,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link curto copiado com sucesso!');
+            alert('Link inteligente copiado com sucesso!');
         }
 
         function renderGrid() {
