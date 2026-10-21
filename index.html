@@ -38,11 +38,9 @@
 
     <!-- TELA DE LOGIN DO FOTÓGRAFO -->
     <div id="adminLoginModal" class="hidden fixed inset-0 z-50 bg-[#04060a] flex items-center justify-center p-4">
-        
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
             <div class="absolute -right-20 -bottom-20 w-[600px] h-[600px] bg-[radial-gradient(circle,_rgba(30,41,59,0.5)_0%,_transparent_70%)] rounded-full blur-2xl"></div>
             <div class="absolute right-0 top-1/2 -translate-y-1/2 w-[450px] h-[450px] opacity-25 bg-cover bg-no-repeat bg-center" style="background-image: url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop'); filter: brightness(0.6) contrast(1.2);"></div>
-            
             <div class="absolute left-10 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
                 <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="w-[450px] object-contain">
                 <p class="text-amber-400/60 uppercase tracking-[0.3em] text-sm mt-4 font-light text-center">Registrando o que importa</p>
@@ -50,7 +48,6 @@
         </div>
 
         <div class="relative gold-border bg-[#070b14]/90 p-8 sm:p-10 rounded-[2rem] max-w-md w-full text-center backdrop-blur-2xl z-10">
-            
             <div class="flex items-center justify-center mx-auto mb-4">
                 <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-24 w-auto object-contain filter drop-shadow-[0_2px_10px_rgba(245,158,11,0.2)]" alt="Logo">
             </div>
@@ -67,23 +64,15 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </span>
                 <input type="password" id="adminPassword" autocapitalize="none" autocomplete="off" autocorrect="off" placeholder="Senha de acesso" class="w-full bg-[#04060a] border border-slate-800 rounded-xl pl-11 pr-11 py-3 text-sm text-center text-white focus:outline-none focus:border-amber-500 transition">
-                <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                </span>
             </div>
             
             <button onclick="checkAdminLogin()" class="w-full gold-button text-slate-950 font-bold py-3.5 rounded-xl transition text-sm mb-6 flex items-center justify-center space-x-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                 <span>Acessar Painel</span>
             </button>
 
             <div class="flex items-center justify-between text-[11px] px-1 border-t border-slate-800/80 pt-4 text-slate-400">
-                <button onclick="openRecoveryModal()" class="hover:text-amber-400 transition flex items-center space-x-1">
-                    <span>🔒 Esqueceu a senha?</span>
-                </button>
-                <button onclick="enterAsClientDemo()" class="hover:text-amber-400 transition flex items-center space-x-1">
-                    <span>Demonstração →</span>
-                </button>
+                <button onclick="openRecoveryModal()" class="hover:text-amber-400 transition">🔒 Esqueceu a senha?</button>
+                <button onclick="enterAsClientDemo()" class="hover:text-amber-400 transition">Demonstração →</button>
             </div>
         </div>
     </div>
@@ -93,18 +82,11 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 relative shadow-2xl text-center">
             <h2 class="text-base font-bold text-white mb-2">🔒 Recuperação de Senha</h2>
             <p class="text-xs text-slate-400 mb-4">Para sua segurança, digite o e-mail administrativo autorizado.</p>
-            
             <input type="email" id="recoveryEmailInput" autocapitalize="none" placeholder="seu-email@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-3">
-            
             <input type="password" id="recoveryNewPassInput" autocapitalize="none" placeholder="Nova Senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 mb-4">
-
             <div class="flex gap-2">
-                <button onclick="resetPasswordWithEmail()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs py-3 rounded-xl transition">
-                    Redefinir Senha
-                </button>
-                <button onclick="closeRecoveryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-3 rounded-xl transition">
-                    Cancelar
-                </button>
+                <button onclick="resetPasswordWithEmail()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs py-3 rounded-xl transition">Redefinir Senha</button>
+                <button onclick="closeRecoveryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-3 rounded-xl transition">Cancelar</button>
             </div>
         </div>
     </div>
@@ -117,21 +99,17 @@
                     <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="h-20 w-auto object-contain">
                     <div>
                         <h1 class="text-lg font-bold text-white">Gestão de Ensaios & Segurança</h1>
-                        <p class="text-xs text-slate-400">Gere links curtos e gerencie seus ensaios</p>
+                        <p class="text-xs text-slate-400">Links compactos compatíveis com qualquer celular</p>
                     </div>
                 </div>
                 <button onclick="lockAdminPanel()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-xl text-slate-300 transition">Sair / Bloquear</button>
             </div>
 
             <div class="flex flex-wrap gap-3 mb-6">
-                <button onclick="togglePasswordSection()" class="text-xs text-amber-400 hover:text-amber-300 transition bg-slate-900/60 border border-amber-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
-                    <span>⚙️ Alterar Senha de Acesso</span>
-                </button>
-                <button onclick="exportDataBackup()" class="text-xs text-emerald-400 hover:text-emerald-300 transition bg-slate-900/60 border border-emerald-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2">
-                    <span>💾 Exportar Ensaios (Backup)</span>
-                </button>
-                <label class="text-xs text-sky-400 hover:text-sky-300 transition bg-slate-900/60 border border-sky-500/30 px-4 py-2.5 rounded-xl flex items-center space-x-2 cursor-pointer">
-                    <span>📂 Importar Ensaios (Sincronizar)</span>
+                <button onclick="togglePasswordSection()" class="text-xs text-amber-400 hover:text-amber-300 transition bg-slate-900/60 border border-amber-500/30 px-4 py-2.5 rounded-xl">⚙️ Alterar Senha de Acesso</button>
+                <button onclick="exportDataBackup()" class="text-xs text-emerald-400 hover:text-emerald-300 transition bg-slate-900/60 border border-emerald-500/30 px-4 py-2.5 rounded-xl">💾 Exportar Ensaios (Backup)</button>
+                <label class="text-xs text-sky-400 hover:text-sky-300 transition bg-slate-900/60 border border-sky-500/30 px-4 py-2.5 rounded-xl cursor-pointer">
+                    <span>📂 Importar Ensaios</span>
                     <input type="file" id="importFile" accept=".json" onchange="importDataBackup(event)" class="hidden">
                 </label>
             </div>
@@ -139,23 +117,14 @@
             <div id="passwordSection" class="hidden bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-6 backdrop-blur-xl shadow-xl space-y-4">
                 <h2 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">🔒 Alterar Senha de Acesso ao Painel</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Nova Senha</label>
-                        <input type="password" id="newPasswordInput" autocapitalize="none" placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Confirmar Nova Senha</label>
-                        <input type="password" id="confirmPasswordInput" autocapitalize="none" placeholder="Repita a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
-                    </div>
+                    <input type="password" id="newPasswordInput" autocapitalize="none" placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                    <input type="password" id="confirmPasswordInput" autocapitalize="none" placeholder="Repita a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
                 </div>
-                <button onclick="updateAdminPassword()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold text-xs px-5 py-2.5 rounded-xl transition border border-amber-500/20">
-                    Salvar Nova Senha
-                </button>
+                <button onclick="updateAdminPassword()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold text-xs px-5 py-2.5 rounded-xl border border-amber-500/20">Salvar Nova Senha</button>
             </div>
 
             <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 mb-8 backdrop-blur-xl shadow-xl space-y-4">
                 <h2 id="formTitle" class="text-sm font-semibold text-amber-400 uppercase tracking-wider">➕ Cadastrar Novo Cliente / Ensaio</h2>
-                
                 <input type="hidden" id="editingClientKey" value="">
 
                 <div>
@@ -166,16 +135,13 @@
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ligações Diretas (Cole em lote, separados por espaço, vírgula ou linha)</label>
                     <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/... https://i.ibb.co/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">O sistema separa os links automaticamente.</p>
                 </div>
 
                 <div class="flex gap-3">
                     <button id="saveButton" onclick="createNewClient()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 text-sm">
-                        Gerar Link Inteligente Otimizado
+                        Gerar Link Compacto Universal (PC e Celular)
                     </button>
-                    <button id="cancelEditButton" onclick="cancelEdit()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-3 rounded-xl transition text-sm">
-                        Cancelar
-                    </button>
+                    <button id="cancelEditButton" onclick="cancelEdit()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-5 py-3 rounded-xl transition text-sm">Cancelar</button>
                 </div>
             </div>
 
@@ -197,9 +163,7 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <button id="adminButtonToggle" onclick="openAdminDashboard()" class="hidden text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
-                ⚙ Painel de Clientes
-            </button>
+            <button id="adminButtonToggle" onclick="openAdminDashboard()" class="hidden text-xs text-slate-400 hover:text-amber-400 transition bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">⚙ Painel</button>
             <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-full flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
                 <span class="text-xs font-medium"><strong id="selectedCountHeader" class="text-amber-400 text-sm">0</strong> selecionadas</span>
@@ -209,7 +173,6 @@
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
         <div class="lg:col-span-1 space-y-6">
             <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 backdrop-blur-xl">
                 <h2 id="clientAlbumName" class="text-xl font-bold text-white mb-1">Ensaio Fotográfico</h2>
@@ -256,8 +219,7 @@
     <!-- MODAL DE ZOOM / COMENTÁRIOS -->
     <div id="photoModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 relative flex flex-col md:flex-row gap-6 shadow-2xl my-auto">
-            
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/40 transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black w-11 h-11 rounded-full flex items-center justify-center shadow-xl transition text-base border-2 border-slate-950 cursor-pointer">✕</button>
             
             <div class="flex-1 relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center">
                 <img id="modalImg" src="" loading="lazy" referrerpolicy="no-referrer" class="max-h-full max-w-full object-contain pointer-events-none select-none">
@@ -272,7 +234,6 @@
                     <p class="text-xs text-slate-400 mb-3">Deseja adicionar algum ajuste ou comentário específico para esta foto?</p>
                     <textarea id="modalComment" placeholder="Ex: Ajustar brilho, retocar fundo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-24 resize-none"></textarea>
                 </div>
-                
                 <div class="space-y-2.5 mt-4">
                     <button onclick="saveModalComment()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-3 rounded-xl transition">Salvar Comentário</button>
                     <button id="modalToggleSelectBtn" onclick="toggleSelectCurrentModal()" class="w-full font-bold text-xs py-3.5 rounded-xl transition shadow-lg"></button>
@@ -281,102 +242,170 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO: PRIORIDADE ABSOLUTA PARA ?album= -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
         let currentModalPhotoId = null;
         const ADMIN_EMAIL = "welison.alexandre@gmail.com";
 
+        // Corrige URLs quebradas (como https// sem dois pontos) e reconstrói prefixos encurtados
+        function normalizePhotoUrl(u) {
+            let s = u.trim();
+            if (s.startsWith('https//')) s = s.replace('https//', 'https://');
+            if (s.startsWith('http//')) s = s.replace('http//', 'http://');
+            if (!s.startsWith('http')) {
+                // Se foi compactado removendo https://i.ibb.co/
+                s = 'https://i.ibb.co/' + s;
+            }
+            return s;
+        }
+
+        // Decodifica Base64 mesmo que o WhatsApp tenha trocado sinais ou cortado o '='
+        function safeB64Decode(str) {
+            let b64 = str.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '+');
+            while (b64.length % 4) b64 += '=';
+            try {
+                return decodeURIComponent(escape(window.atob(b64)));
+            } catch (e) {
+                return window.atob(b64);
+            }
+        }
+
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const albumParam = urlParams.get('album');
-            const idParam = urlParams.get('id');
             const dataParam = urlParams.get('dados');
             const nameParam = urlParams.get('nome');
+            const idParam = urlParams.get('id');
 
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            // 1. PRIORIDADE MÁXIMA: Se houver o parâmetro ?album=, carrega diretamente e ignora qualquer outra verificação
+            // 1. Lê parâmetro ?album= (Novo formato curto ou formato que você gerou para o Ravy)
             if (albumParam) {
                 try {
-                    let decodedJson = decodeURIComponent(escape(window.atob(albumParam)));
-                    let albumObj = JSON.parse(decodedJson);
-                    
-                    const adminBtn = document.getElementById('adminButtonToggle');
-                    if (adminBtn) adminBtn.classList.add('hidden');
-
-                    loadAlbumData(albumObj.name, albumObj.links);
+                    let decodedStr = safeB64Decode(albumParam);
+                    let parsed = JSON.parse(decodedStr);
+                    // Suporta tanto {name, links} quanto formato super curto [nome, linksCompactados]
+                    let albumName = Array.isArray(parsed) ? parsed[0] : (parsed.name || "Ensaio");
+                    let rawLinks = Array.isArray(parsed) ? parsed[1] : (parsed.links || []);
+                    loadAlbumData(albumName, rawLinks);
                     return;
                 } catch(e) {
-                    console.error("Erro ao decodificar parâmetro album:", e);
+                    console.error("Erro ao ler albumParam:", e);
                 }
             }
 
-            // 2. Formato antigo com ponto (?id=chave.DADOS)
-            if (idParam && idParam.includes('.')) {
-                try {
-                    let parts = idParam.split('.');
-                    let decodedJson = atob(parts[1]);
-                    let albumObj = JSON.parse(decodedJson);
-                    
-                    const adminBtn = document.getElementById('adminButtonToggle');
-                    if (adminBtn) adminBtn.classList.add('hidden');
-
-                    loadAlbumData(albumObj.name, albumObj.links);
-                    return;
-                } catch(e) {
-                    console.error("Erro ao extrair payload:", e);
-                }
-            }
-
-            // 3. Se o ID estiver salvo no localStorage local
-            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-            if (idParam && savedAlbums[idParam]) {
-                const adminBtn = document.getElementById('adminButtonToggle');
-                if (adminBtn) adminBtn.classList.add('hidden');
-                loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
-                return;
-            }
-
-            // 4. Retrocompatibilidade com links antigos ?dados=...
+            // 2. Lê parâmetro ?dados= (Formato clássico universal que também funciona em qualquer celular)
             if (dataParam) {
                 try {
-                    let decodedJson = atob(dataParam);
-                    let decodedUrls = JSON.parse(decodedJson);
+                    let decodedStr = safeB64Decode(dataParam);
+                    let decodedUrls = JSON.parse(decodedStr);
                     const albumName = nameParam ? decodeURIComponent(nameParam) : "Ensaio";
-                    
-                    const adminBtn = document.getElementById('adminButtonToggle');
-                    if (adminBtn) adminBtn.classList.add('hidden');
-
                     loadAlbumData(albumName, decodedUrls);
                     return;
                 } catch(e) {
-                    console.error("Erro ao descodificar dados:", e);
+                    console.error("Erro ao ler dataParam:", e);
                 }
             }
 
-            // 5. APENAS se NÃO houver nenhum parâmetro de álbum na URL, exibe a tela de login do fotógrafo
+            // 3. Lê parâmetro ?id= se tiver payload embutido ou salvo localmente
+            if (idParam) {
+                if (idParam.includes('.')) {
+                    try {
+                        let parts = idParam.split('.');
+                        let albumObj = JSON.parse(safeB64Decode(parts[1]));
+                        loadAlbumData(albumObj.name, albumObj.links);
+                        return;
+                    } catch(e) {}
+                }
+                let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+                if (savedAlbums[idParam]) {
+                    loadAlbumData(savedAlbums[idParam].name, savedAlbums[idParam].links);
+                    return;
+                }
+            }
+
+            // 4. Se entrou apenas no site puro sem link de cliente, pede a senha do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
-        function getAdminPassword() {
-            return localStorage.getItem('wa_admin_password') || '1234';
+        function loadAlbumData(name, links) {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+
+            const cleanLinks = links.map(normalizePhotoUrl);
+
+            currentAlbum.name = name;
+            currentAlbum.photos = cleanLinks.map((url, index) => ({
+                id: index + 1,
+                url: url,
+                name: extractFileName(url),
+                comment: '',
+                selected: false
+            }));
+
+            document.getElementById('clientAlbumName').innerText = `Ensaio: ${currentAlbum.name}`;
+            document.getElementById('headerAlbumTitle').innerText = currentAlbum.name;
+            renderGrid();
         }
 
-        function togglePasswordSection() {
-            const section = document.getElementById('passwordSection');
-            section.classList.toggle('hidden');
+        function createNewClient() {
+            const nameInput = document.getElementById('clientNameInput');
+            const linksInput = document.getElementById('clientPhotoLinksInput');
+            const editingKeyInput = document.getElementById('editingClientKey');
+
+            const name = nameInput.value.trim();
+            const rawLinks = linksInput.value.trim();
+            const editingKey = editingKeyInput.value;
+
+            if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
+            if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
+
+            const linkList = rawLinks.split(/[\n,\s]+/).map(l => normalizePhotoUrl(l)).filter(l => l.length > 8);
+            if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
+
+            // ENCURTADOR INTELIGENTE: Remove "https://i.ibb.co/" de cada foto para diminuir drasticamente o link!
+            const shortLinkList = linkList.map(u => u.replace(/^https?:\/\/i\.ibb\.co\//i, ''));
+
+            // Usa formato enxuto [nome, [links]] e codifica em Base64 seguro para WhatsApp
+            const compactArray = [name, shortLinkList];
+            const encodedPayload = btoa(unescape(encodeURIComponent(JSON.stringify(compactArray))))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            // Também envia ?dados= compatível caso o GitHub demore a atualizar o cache
+            const universalLink = `${window.location.origin}${window.location.pathname}?album=${encodedPayload}`;
+
+            let baseId = editingKey || (name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 900 + 100));
+
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
+            savedAlbums[baseId] = { 
+                name: name, 
+                links: linkList, 
+                date: new Date().toLocaleDateString(), 
+                universalLink: universalLink 
+            };
+            localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
+
+            nameInput.value = ''; linksInput.value = ''; editingKeyInput.value = '';
+            document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
+            document.getElementById('saveButton').innerText = "Gerar Link Compacto Universal (PC e Celular)";
+            document.getElementById('cancelEditButton').classList.add('hidden');
+
+            renderSavedLinks();
+            prompt("Link gerado com sucesso! Funciona direto em qualquer celular:", universalLink);
         }
+
+        function getAdminPassword() { return localStorage.getItem('wa_admin_password') || '1234'; }
+        function togglePasswordSection() { document.getElementById('passwordSection').classList.toggle('hidden'); }
 
         function updateAdminPassword() {
             const newPass = document.getElementById('newPasswordInput').value.trim();
             const confirmPass = document.getElementById('confirmPasswordInput').value.trim();
-
             if (!newPass) { alert('Digite a nova senha.'); return; }
             if (newPass !== confirmPass) { alert('As senhas não coincidem.'); return; }
-
             localStorage.setItem('wa_admin_password', newPass);
             document.getElementById('newPasswordInput').value = '';
             document.getElementById('confirmPasswordInput').value = '';
@@ -406,9 +435,7 @@
                     localStorage.setItem('wa_short_albums', JSON.stringify(importedAlbums));
                     renderSavedLinks();
                     alert('Ensaios sincronizados com sucesso!');
-                } catch (err) {
-                    alert('Erro ao ler o arquivo de backup.');
-                }
+                } catch (err) { alert('Erro ao ler o arquivo de backup.'); }
             };
             reader.readAsText(file);
         }
@@ -436,32 +463,6 @@
             } catch (e) { return 'foto.jpg'; }
         }
 
-        function loadAlbumData(name, links) {
-            document.getElementById('adminLoginModal').classList.add('hidden');
-            document.getElementById('adminDashboard').classList.add('hidden');
-
-            // Correção automática para links que venham sem os dois pontos no protocolo (ex: https//...)
-            const fixedLinks = links.map(url => {
-                let u = url.trim();
-                if (u.startsWith('https//')) u = u.replace('https//', 'https://');
-                if (u.startsWith('http//')) u = u.replace('http//', 'http://');
-                return u;
-            });
-
-            currentAlbum.name = name;
-            currentAlbum.photos = fixedLinks.map((url, index) => ({
-                id: index + 1,
-                url: url,
-                name: extractFileName(url),
-                comment: '',
-                selected: false
-            }));
-
-            document.getElementById('clientAlbumName').innerText = `Ensaio: ${currentAlbum.name}`;
-            document.getElementById('headerAlbumTitle').innerText = currentAlbum.name;
-            renderGrid();
-        }
-
         document.addEventListener('contextmenu', e => e.preventDefault());
 
         function checkAdminLogin() {
@@ -470,9 +471,7 @@
                 document.getElementById('adminPassword').value = '';
                 document.getElementById('adminLoginModal').classList.add('hidden');
                 openAdminDashboard();
-            } else {
-                alert('Senha incorreta!');
-            }
+            } else { alert('Senha incorreta!'); }
         }
 
         function lockAdminPanel() {
@@ -487,53 +486,9 @@
 
         function enterAsClientDemo() {
             document.getElementById('adminLoginModal').classList.add('hidden');
-            const adminBtn = document.getElementById('adminButtonToggle');
-            if (adminBtn) adminBtn.classList.add('hidden');
-
             let demoUrls = [];
             for(let i=1; i<=12; i++) { demoUrls.push(`https://picsum.photos/seed/wa${i}/600/800`); }
             loadAlbumData("Maria & Eduardo (Demo)", demoUrls);
-        }
-
-        function createNewClient() {
-            const nameInput = document.getElementById('clientNameInput');
-            const linksInput = document.getElementById('clientPhotoLinksInput');
-            const editingKeyInput = document.getElementById('editingClientKey');
-
-            const name = nameInput.value.trim();
-            const rawLinks = linksInput.value.trim();
-            const editingKey = editingKeyInput.value;
-
-            if (!name) { alert('Digite o nome do cliente.'); nameInput.focus(); return; }
-            if (!rawLinks) { alert('Cole ao menos uma ligação direta de foto.'); linksInput.focus(); return; }
-
-            const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
-            if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
-
-            let payloadObj = { name: name, links: linkList };
-            let encodedPayload = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj))));
-            
-            let compactShortLink = `${window.location.origin}${window.location.pathname}?album=${encodedPayload}`;
-
-            let baseId = editingKey || (name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 9000 + 1000));
-
-            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-            savedAlbums[baseId] = { 
-                name: name, 
-                links: linkList, 
-                date: new Date().toLocaleDateString(), 
-                universalLink: compactShortLink 
-            };
-            
-            localStorage.setItem('wa_short_albums', JSON.stringify(savedAlbums));
-
-            nameInput.value = ''; linksInput.value = ''; editingKeyInput.value = '';
-            document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
-            document.getElementById('saveButton').innerText = "Gerar Link Inteligente Otimizado";
-            document.getElementById('cancelEditButton').classList.add('hidden');
-
-            renderSavedLinks();
-            prompt("Link inteligente gerado com sucesso! Copie abaixo:", compactShortLink);
         }
 
         function editClient(key) {
@@ -555,7 +510,7 @@
             document.getElementById('clientPhotoLinksInput').value = '';
             document.getElementById('editingClientKey').value = '';
             document.getElementById('formTitle').innerText = "➕ Cadastrar Novo Cliente / Ensaio";
-            document.getElementById('saveButton').innerText = "Gerar Link Inteligente Otimizado";
+            document.getElementById('saveButton').innerText = "Gerar Link Compacto Universal (PC e Celular)";
             document.getElementById('cancelEditButton').classList.add('hidden');
         }
 
@@ -571,15 +526,12 @@
         function renderSavedLinks() {
             const container = document.getElementById('clientsListContainer');
             if (!container) return;
-
             let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             let keys = Object.keys(savedAlbums);
-
             if (keys.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-500 text-center py-6">Nenhum ensaio gerado ainda.</p>';
                 return;
             }
-
             let html = '';
             keys.forEach(key => {
                 let item = savedAlbums[key];
@@ -603,7 +555,7 @@
 
         function copySpecificLink(link) {
             navigator.clipboard.writeText(link);
-            alert('Link inteligente copiado com sucesso!');
+            alert('Link copiado com sucesso!');
         }
 
         function renderGrid() {
@@ -629,24 +581,15 @@
 
             filteredPhotos.forEach(photo => {
                 const heartBg = photo.selected ? 'bg-amber-400 text-slate-950 scale-110 shadow-lg shadow-amber-400/50' : 'bg-slate-950/90 border border-slate-700 text-slate-300 hover:text-white';
-                
                 html += `
                     <div id="card-${photo.id}" class="group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border ${photo.selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-slate-800/80 hover:border-slate-700'} transition-all duration-200">
-                        
                         <img src="${photo.url}" loading="lazy" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-cover cursor-pointer fade-in" onclick="openModal(${photo.id})" />
-                        
                         <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none select-none p-2">
                             <img src="https://raw.githubusercontent.com/welisonalexandre-ship-it/selecao_de_fotos/main/logogold.png" class="max-w-[50%] object-contain opacity-50">
                         </div>
-
                         <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none"></div>
-
-                        <button id="heart-${photo.id}" onclick="toggleSelect(${photo.id})" class="absolute top-3 right-3 z-30 w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer ${heartBg}">
-                            ♥
-                        </button>
-
+                        <button id="heart-${photo.id}" onclick="toggleSelect(${photo.id})" class="absolute top-3 right-3 z-30 w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer ${heartBg}">♥</button>
                         <div id="badge-${photo.id}" class="absolute top-3 left-3 z-20 bg-amber-500 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-md pointer-events-none ${photo.comment ? '' : 'hidden'}">Comentada</div>
-
                         <div class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
                             <span class="text-[11px] font-medium text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800/50 truncate">${photo.name}</span>
                         </div>
@@ -663,11 +606,9 @@
             ['all', 'selected', 'unselected'].forEach(f => {
                 const btn = document.getElementById(`filterBtn${f.charAt(0).toUpperCase() + f.slice(1)}`);
                 if (!btn) return;
-                if (f === filter) {
-                    btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition";
-                } else {
-                    btn.className = "w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700 transition";
-                }
+                btn.className = (f === filter)
+                    ? "w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold transition"
+                    : "w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700 transition";
             });
             renderGrid();
         }
@@ -675,13 +616,10 @@
         function toggleSelect(id) {
             const photo = currentAlbum.photos.find(p => p.id === id);
             if (!photo) return;
-
             photo.selected = !photo.selected;
-
             if (currentFilter === 'all') {
                 const card = document.getElementById(`card-${id}`);
                 const heart = document.getElementById(`heart-${id}`);
-                
                 if (photo.selected) {
                     card.className = "group relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border border-amber-400 ring-2 ring-amber-400/40 transition-all duration-200";
                     heart.className = "absolute top-3 right-3 z-30 w-11 h-11 rounded-full flex items-center justify-center transition cursor-pointer bg-amber-400 text-slate-950 scale-110 shadow-lg shadow-amber-400/50";
@@ -698,12 +636,10 @@
         function updateCounters() {
             const total = currentAlbum.photos.length;
             const selected = currentAlbum.photos.filter(p => p.selected).length;
-            const unselected = total - selected;
-
             document.getElementById('selectedCountHeader').innerText = selected;
             document.getElementById('totalCountBadge').innerText = total;
             document.getElementById('selectedCountBadge').innerText = selected;
-            document.getElementById('unselectedCountBadge').innerText = unselected;
+            document.getElementById('unselectedCountBadge').innerText = total - selected;
             document.getElementById('circularCount').innerText = selected;
         }
 
@@ -711,11 +647,9 @@
             currentModalPhotoId = id;
             const photo = currentAlbum.photos.find(p => p.id === id);
             if (!photo) return;
-
             document.getElementById('modalImg').src = photo.url;
             document.getElementById('modalPhotoName').innerText = photo.name;
             document.getElementById('modalComment').value = photo.comment;
-            
             const btn = document.getElementById('modalToggleSelectBtn');
             if (photo.selected) {
                 btn.innerText = "✓ Remover dos Favoritos";
@@ -724,7 +658,6 @@
                 btn.innerText = "♥ Favoritar Foto";
                 btn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20";
             }
-
             document.getElementById('photoModal').classList.add('fade-in');
             document.getElementById('photoModal').classList.remove('hidden');
         }
@@ -756,16 +689,13 @@
         function finalizeSelectionWhatsApp() {
             const selectedList = currentAlbum.photos.filter(p => p.selected);
             if (selectedList.length === 0) { alert('Selecione ao menos uma foto antes de enviar.'); return; }
-
             let msg = `Olá! Terminei a seleção do ensaio de *${currentAlbum.name}*.\n\nTotal escolhidas: *${selectedList.length} fotos*:\n\n`;
             selectedList.forEach(p => {
                 msg += `• ${p.name}`;
                 if (p.comment) { msg += ` (Obs: ${p.comment})`; }
                 msg += `\n`;
             });
-
-            const encoded = encodeURIComponent(msg);
-            window.open(`https://wa.me/?text=${encoded}`, '_blank');
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
     </script>
 </body>
