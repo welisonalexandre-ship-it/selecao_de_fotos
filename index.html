@@ -160,12 +160,12 @@
 
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nome do Cliente</label>
-                    <input type="text" id="clientNameInput" placeholder="Ex: Maria Eduarda" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <input type="text" id="clientNameInput" placeholder="Ex: Ravy" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
 
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ligações Diretas (Cole em lote, separados por espaço, vírgula ou linha)</label>
-                    <textarea id="clientPhotoLinksInput" placeholder="https://i.imgur.com/... https://i.imgur.com/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
+                    <textarea id="clientPhotoLinksInput" placeholder="https://i.ibb.co/... https://i.ibb.co/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 h-32 resize-none"></textarea>
                     <p class="text-[11px] text-slate-500 mt-1">O sistema separa os links automaticamente.</p>
                 </div>
 
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT CORRIGIDO E BLINDADO PARA MOBILE -->
+    <!-- SCRIPT CORRIGIDO: PRIORIDADE ABSOLUTA PARA ?album= -->
     <script>
         let currentAlbum = { name: "Ensaio", photos: [] };
         let currentFilter = 'all';
@@ -290,7 +290,7 @@
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const albumParam = urlParams.get('album'); // Novo parâmetro compacto otimizado
+            const albumParam = urlParams.get('album');
             const idParam = urlParams.get('id');
             const dataParam = urlParams.get('dados');
             const nameParam = urlParams.get('nome');
@@ -298,9 +298,7 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
-            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
-
-            // 1. Prioridade Máxima: Lê o parâmetro ?album= direto na URL (funciona perfeitamente em qualquer celular sem erro)
+            // 1. PRIORIDADE MÁXIMA: Se houver o parâmetro ?album=, carrega diretamente e ignora qualquer outra verificação
             if (albumParam) {
                 try {
                     let decodedJson = decodeURIComponent(escape(window.atob(albumParam)));
@@ -334,6 +332,7 @@
             }
 
             // 3. Se o ID estiver salvo no localStorage local
+            let savedAlbums = JSON.parse(localStorage.getItem('wa_short_albums') || '{}');
             if (idParam && savedAlbums[idParam]) {
                 const adminBtn = document.getElementById('adminButtonToggle');
                 if (adminBtn) adminBtn.classList.add('hidden');
@@ -358,7 +357,7 @@
                 }
             }
 
-            // 5. Se não houver nenhum parâmetro válido, abre a tela de login do fotógrafo
+            // 5. APENAS se NÃO houver nenhum parâmetro de álbum na URL, exibe a tela de login do fotógrafo
             document.getElementById('adminLoginModal').classList.remove('hidden');
         };
 
@@ -441,10 +440,18 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
 
+            // Correção automática para links que venham sem os dois pontos no protocolo (ex: https//...)
+            const fixedLinks = links.map(url => {
+                let u = url.trim();
+                if (u.startsWith('https//')) u = u.replace('https//', 'https://');
+                if (u.startsWith('http//')) u = u.replace('http//', 'http://');
+                return u;
+            });
+
             currentAlbum.name = name;
-            currentAlbum.photos = links.map((url, index) => ({
+            currentAlbum.photos = fixedLinks.map((url, index) => ({
                 id: index + 1,
-                url: url.trim(),
+                url: url,
                 name: extractFileName(url),
                 comment: '',
                 selected: false
@@ -503,11 +510,9 @@
             const linkList = rawLinks.split(/[\n,\s]+/).map(l => l.trim()).filter(l => l.length > 5);
             if (linkList.length === 0) { alert('Nenhuma ligação válida encontrada.'); return; }
 
-            // Compacta os dados do ensaio de forma limpa e segura para celulares
             let payloadObj = { name: name, links: linkList };
             let encodedPayload = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj))));
             
-            // Cria um link extremamente enxuto usando ?album=...
             let compactShortLink = `${window.location.origin}${window.location.pathname}?album=${encodedPayload}`;
 
             let baseId = editingKey || (name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '') + '_' + Math.floor(Math.random() * 9000 + 1000));
